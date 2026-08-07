@@ -58,7 +58,6 @@ Future implications.
 Alternatives Considered
 Document the rejected alternatives.
 
-text
 
 ## Why ADRs Are Mandatory
 
