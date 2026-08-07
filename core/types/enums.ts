@@ -1,17 +1,6 @@
 ﻿/**
  * Core Types Module - Enums
  * 
- * Defines shared enumerations used across multiple domain entities.
- * 
- * Contains enums that are not specific to a single entity but are
- * referenced by multiple components of the platform.
- * 
- * @module core/types/enums
- */
-
-/**
- * Core Types Module - Enums
- * 
  * Defines shared enumerations used across the entire platform.
  * 
  * These enums are domain-independent and reusable by multiple modules.
@@ -58,6 +47,21 @@ export enum PropertyCondition {
   GOOD = 'GOOD',
   FAIR = 'FAIR',
   NEEDS_RENOVATION = 'NEEDS_RENOVATION',
+}
+
+/**
+ * BuildingCondition
+ * 
+ * Represents the physical condition of the building containing a property.
+ * Used for adjustment factors in valuation calculations.
+ * 
+ * @see ADR-006 - Separation of Property Condition and Building Condition
+ */
+export enum BuildingCondition {
+  EXCELLENT = 'EXCELLENT',
+  WELL_MAINTAINED = 'WELL_MAINTAINED',
+  FAIR = 'FAIR',
+  OLD_NEEDS_RENOVATION = 'OLD_NEEDS_RENOVATION',
 }
 
 /**

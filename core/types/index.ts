@@ -9,11 +9,11 @@
  */
 
 export * from './primitives';
-export * from './property';
-export * from './valuation';
-export * from './market';
-export * from './financial';
-export * from './confidence';
+export * from './enums';
 export * from './location';
 export * from './metadata';
-export * from './enums';
+export * from './financial';
+export * from './property';
+export * from './market';
+export * from './valuation';
+export * from './confidence';

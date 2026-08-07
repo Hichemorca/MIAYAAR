@@ -1,17 +1,6 @@
 ﻿/**
  * Core Types Module - Valuation
  * 
- * Defines the Valuation entity and valuation-related types.
- * 
- * Represents the valuation output, including value estimates,
- * methodology applied, adjustment factors, and supporting calculations.
- * 
- * @module core/types/valuation
- */
-
-/**
- * Core Types Module - Valuation
- * 
  * Defines immutable valuation result types for the platform.
  * 
  * Valuation represents the official result of one completed valuation.

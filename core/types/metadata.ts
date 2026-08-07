@@ -1,17 +1,6 @@
 ﻿/**
  * Core Types Module - Metadata
  * 
- * Defines metadata types used across all entities.
- * 
- * Contains types for timestamps, versioning, data provenance,
- * source references, and validation status.
- * 
- * @module core/types/metadata
- */
-
-/**
- * Core Types Module - Metadata
- * 
  * Defines shared technical metadata for the platform.
  * 
  * Metadata describes the lifecycle and origin of an object.

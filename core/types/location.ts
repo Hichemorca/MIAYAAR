@@ -1,17 +1,6 @@
 ﻿/**
  * Core Types Module - Location
  * 
- * Defines the Location entity and location-related types.
- * 
- * Represents geospatial context, including coordinates,
- * administrative boundaries, proximity metrics, and neighborhood characteristics.
- * 
- * @module core/types/location
- */
-
-/**
- * Core Types Module - Location
- * 
  * Defines the canonical location model for the platform.
  * 
  * Represents where a property exists. Contains only business data
@@ -23,7 +12,7 @@
  * @module core/types/location
  */
 
-import { Optional, Nullable } from './primitives';
+import { ID, Name, Description, Code, Nullable, Optional } from './primitives';
 
 /**
  * Coordinates
@@ -47,9 +36,9 @@ export interface Coordinates {
  */
 export interface Country {
   /** Country code (ISO 3166-1 alpha-2) */
-  code: string;
+  code: Code;
   /** Country name */
-  name: string;
+  name: Name;
 }
 
 /**
@@ -60,9 +49,9 @@ export interface Country {
  */
 export interface Region {
   /** Region code */
-  code: string;
+  code: Code;
   /** Region name */
-  name: string;
+  name: Name;
   /** Optional reference to parent country */
   country?: Country;
 }
@@ -74,9 +63,9 @@ export interface Region {
  */
 export interface City {
   /** City code or identifier */
-  code: string;
+  code: Code;
   /** City name */
-  name: string;
+  name: Name;
   /** Optional reference to parent region */
   region?: Region;
 }
@@ -89,9 +78,9 @@ export interface City {
  */
 export interface District {
   /** District code or identifier */
-  code: string;
+  code: Code;
   /** District name */
-  name: string;
+  name: Name;
   /** Optional reference to parent city */
   city?: City;
 }
@@ -104,9 +93,9 @@ export interface District {
  */
 export interface Neighborhood {
   /** Neighborhood code or identifier */
-  code: string;
+  code: Code;
   /** Neighborhood name */
-  name: string;
+  name: Name;
   /** Optional reference to parent district */
   district?: District;
 }
@@ -118,7 +107,7 @@ export interface Neighborhood {
  */
 export interface PostalCode {
   /** Postal code value */
-  code: string;
+  code: Code;
   /** Optional reference to parent location */
   region?: Region;
   city?: City;
@@ -154,13 +143,13 @@ export interface Address {
  */
 export interface AdministrativeArea {
   /** Area identifier */
-  id: string;
+  id: ID;
   /** Area name */
-  name: string;
+  name: Name;
   /** Level of administrative division */
   level: number;
   /** Optional reference to parent area */
-  parentId?: string;
+  parentId?: ID;
 }
 
 /**
@@ -174,7 +163,7 @@ export interface AdministrativeArea {
  */
 export interface Location {
   /** Unique location identifier */
-  id: string;
+  id: ID;
   /** Geographic coordinates (optional) */
   coordinates?: Coordinates;
   /** Complete address */

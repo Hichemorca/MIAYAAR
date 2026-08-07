@@ -1,17 +1,6 @@
 ﻿/**
  * Core Types Module - Property
  * 
- * Defines the Property entity and related property-specific types.
- * 
- * Represents a real estate asset with its physical characteristics,
- * location reference, and ownership attributes.
- * 
- * @module core/types/property
- */
-
-/**
- * Core Types Module - Property
- * 
  * Defines the Property domain entity.
  * 
  * Property represents the Digital Twin of a real estate asset.
@@ -26,7 +15,13 @@
 import { ID, Name, Description, Code, Status, Nullable } from './primitives';
 import { Location } from './location';
 import { Metadata } from './metadata';
-import { PropertyType, PropertyCondition, UsageType, FloorLevel } from './enums';
+import { 
+  PropertyType, 
+  PropertyCondition, 
+  BuildingCondition,
+  UsageType, 
+  FloorLevel 
+} from './enums';
 
 /**
  * PropertyIdentity
@@ -92,10 +87,14 @@ export interface PhysicalCharacteristics {
  * StructuralCharacteristics
  * 
  * Represents the structural and quality characteristics of a property.
+ * 
+ * @see ADR-006 - Separation of Property Condition and Building Condition
  */
 export interface StructuralCharacteristics {
-  /** Property condition */
-  condition: PropertyCondition;
+  /** Physical condition of the property itself */
+  propertyCondition: PropertyCondition;
+  /** Physical condition of the building containing the property */
+  buildingCondition: BuildingCondition;
   /** Finish quality */
   finishQuality?: string;
   /** Furnished status */
