@@ -19,17 +19,17 @@ import { ID, Timestamp, Version, Email, URL } from './primitives';
  */
 export interface SourceReference {
   /** Unique source identifier */
-  id: ID;
+  readonly id: ID;
   /** Source name or label */
-  name: string;
+  readonly name: string;
   /** Source type or classification */
-  type: string;
+  readonly type: string;
   /** Source version if applicable */
-  version?: Version;
+  readonly version?: Version;
   /** External reference URL if available */
-  url?: URL;
+  readonly url?: URL;
   /** Additional source metadata */
-  metadata?: Record<string, unknown>;
+  readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -39,9 +39,9 @@ export interface SourceReference {
  */
 export interface Timestamps {
   /** Creation timestamp */
-  createdAt: Timestamp;
+  readonly createdAt: Timestamp;
   /** Last modification timestamp */
-  updatedAt: Timestamp;
+  readonly updatedAt: Timestamp;
 }
 
 /**
@@ -51,13 +51,13 @@ export interface Timestamps {
  */
 export interface AuditInfo {
   /** User or system that created the object */
-  createdBy: ID;
+  readonly createdBy: ID;
   /** User or system that last modified the object */
-  updatedBy: ID;
+  readonly updatedBy: ID;
   /** IP address or client identifier (optional) */
-  clientId?: string;
+  readonly clientId?: string;
   /** Session identifier (optional) */
-  sessionId?: string;
+  readonly sessionId?: string;
 }
 
 /**
@@ -67,15 +67,15 @@ export interface AuditInfo {
  */
 export interface VersionInfo {
   /** Semantic version or revision number */
-  version: Version;
+  readonly version: Version;
   /** Version creation timestamp */
-  versionedAt: Timestamp;
+  readonly versionedAt: Timestamp;
   /** User or system that created this version */
-  versionedBy: ID;
+  readonly versionedBy: ID;
   /** Version change description */
-  changeDescription?: string;
+  readonly changeDescription?: string;
   /** Optional parent version reference */
-  parentVersion?: Version;
+  readonly parentVersion?: Version;
 }
 
 /**
@@ -85,17 +85,17 @@ export interface VersionInfo {
  */
 export interface ProvenanceInfo {
   /** Original data source */
-  source: SourceReference;
+  readonly source: SourceReference;
   /** When data was acquired */
-  acquiredAt: Timestamp;
+  readonly acquiredAt: Timestamp;
   /** Who or what acquired the data */
-  acquiredBy: ID;
+  readonly acquiredBy: ID;
   /** Original data identifier if different from internal ID */
-  externalId?: string;
+  readonly externalId?: string;
   /** Processing pipeline version */
-  pipelineVersion?: Version;
+  readonly pipelineVersion?: Version;
   /** Data quality score (optional) */
-  qualityScore?: number;
+  readonly qualityScore?: number;
 }
 
 /**
@@ -107,13 +107,13 @@ export interface ProvenanceInfo {
  */
 export interface StatusInfo {
   /** Current status code */
-  status: string;
+  readonly status: string;
   /** Status category classification */
-  category: string;
+  readonly category: string;
   /** Timestamp of last status change */
-  statusChangedAt: Timestamp;
+  readonly statusChangedAt: Timestamp;
   /** Reason for current status */
-  statusReason?: string;
+  readonly statusReason?: string;
 }
 
 /**
@@ -126,17 +126,17 @@ export interface StatusInfo {
  */
 export interface Metadata {
   /** Unique metadata identifier */
-  id: ID;
+  readonly id: ID;
   /** Technical timestamps */
-  timestamps: Timestamps;
+  readonly timestamps: Timestamps;
   /** Audit information */
-  audit: AuditInfo;
+  readonly audit: AuditInfo;
   /** Version information */
-  version: VersionInfo;
+  readonly version: VersionInfo;
   /** Provenance information */
-  provenance: ProvenanceInfo;
+  readonly provenance: ProvenanceInfo;
   /** Technical status */
-  status: StatusInfo;
+  readonly status: StatusInfo;
   /** Additional technical metadata */
-  extensions?: Record<string, unknown>;
+  readonly extensions?: Readonly<Record<string, unknown>>;
 }

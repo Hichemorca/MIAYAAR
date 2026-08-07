@@ -18,13 +18,13 @@
  */
 export interface Currency {
   /** ISO 4217 currency code */
-  code: string;
+  readonly code: string;
   /** Currency name */
-  name: string;
+  readonly name: string;
   /** Currency symbol */
-  symbol: string;
+  readonly symbol: string;
   /** Number of decimal places */
-  decimalPlaces: number;
+  readonly decimalPlaces: number;
 }
 
 /**
@@ -37,9 +37,9 @@ export interface Currency {
  */
 export interface Money {
   /** Monetary amount */
-  amount: number;
+  readonly amount: number;
   /** Currency information */
-  currency: Currency;
+  readonly currency: Currency;
 }
 
 /**
@@ -51,15 +51,15 @@ export interface Money {
  */
 export interface ExchangeRate {
   /** Source currency code */
-  fromCurrency: string;
+  readonly fromCurrency: string;
   /** Target currency code */
-  toCurrency: string;
+  readonly toCurrency: string;
   /** Exchange rate value */
-  rate: number;
+  readonly rate: number;
   /** Timestamp of the rate */
-  asOf: string;
+  readonly asOf: string;
   /** Rate source or provider */
-  source?: string;
+  readonly source?: string;
 }
 
 /**
@@ -71,11 +71,11 @@ export interface ExchangeRate {
  */
 export interface FinancialValue {
   /** Monetary amount */
-  amount: number;
+  readonly amount: number;
   /** Currency code */
-  currencyCode: string;
+  readonly currencyCode: string;
   /** Optional description of the value */
-  description?: string;
+  readonly description?: string;
   /** Optional reference period */
-  period?: string;
+  readonly period?: string;
 }

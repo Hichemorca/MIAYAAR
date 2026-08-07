@@ -20,11 +20,11 @@ import { PropertyType, DataSource, TransactionType } from './enums';
  */
 export interface MarketTimestamp {
   /** Snapshot timestamp */
-  asOf: Timestamp;
+  readonly asOf: Timestamp;
   /** Period or range description */
-  periodDescription?: string;
+  readonly periodDescription?: string;
   /** Data freshness indicator */
-  daysSinceUpdate: number;
+  readonly daysSinceUpdate: number;
 }
 
 /**
@@ -34,15 +34,15 @@ export interface MarketTimestamp {
  */
 export interface TransactionVolume {
   /** Number of transactions */
-  count: number;
+  readonly count: number;
   /** Total transaction value */
-  totalValue: Money;
+  readonly totalValue: Money;
   /** Average transaction value */
-  averageValue: Money;
+  readonly averageValue: Money;
   /** Median transaction value */
-  medianValue: Money;
+  readonly medianValue: Money;
   /** Transaction type */
-  transactionType: TransactionType;
+  readonly transactionType: TransactionType;
 }
 
 /**
@@ -52,17 +52,17 @@ export interface TransactionVolume {
  */
 export interface PriceIndicators {
   /** Average price per unit */
-  averagePrice: Money;
+  readonly averagePrice: Money;
   /** Median price per unit */
-  medianPrice: Money;
+  readonly medianPrice: Money;
   /** Minimum price */
-  minPrice: Money;
+  readonly minPrice: Money;
   /** Maximum price */
-  maxPrice: Money;
+  readonly maxPrice: Money;
   /** Price per square meter */
-  pricePerSqm: Money;
+  readonly pricePerSqm: Money;
   /** Price trend over period (percentage) */
-  priceTrendPercent: number;
+  readonly priceTrendPercent: number;
 }
 
 /**
@@ -72,15 +72,15 @@ export interface PriceIndicators {
  */
 export interface SupplyIndicators {
   /** Number of active listings */
-  activeListings: number;
+  readonly activeListings: number;
   /** Number of new listings (period) */
-  newListings: number;
+  readonly newListings: number;
   /** Average days on market */
-  daysOnMarket: number;
+  readonly daysOnMarket: number;
   /** List price to sale price ratio */
-  listToSaleRatio: number;
+  readonly listToSaleRatio: number;
   /** Inventory turnover rate */
-  turnoverRate: number;
+  readonly turnoverRate: number;
 }
 
 /**
@@ -90,13 +90,13 @@ export interface SupplyIndicators {
  */
 export interface DemandIndicators {
   /** Number of active buyers */
-  activeBuyers: number;
+  readonly activeBuyers: number;
   /** Number of new inquiries (period) */
-  newInquiries: number;
+  readonly newInquiries: number;
   /** Viewing to offer conversion rate */
-  conversionRate: number;
+  readonly conversionRate: number;
   /** Demand score (0-100) */
-  demandScore: number;
+  readonly demandScore: number;
 }
 
 /**
@@ -106,13 +106,13 @@ export interface DemandIndicators {
  */
 export interface LiquidityIndicators {
   /** Transaction velocity */
-  velocity: number;
+  readonly velocity: number;
   /** Time to sell (average days) */
-  timeToSell: number;
+  readonly timeToSell: number;
   /** Absorption rate (months of inventory) */
-  absorptionRate: number;
+  readonly absorptionRate: number;
   /** Available properties for sale */
-  availableForSale: number;
+  readonly availableForSale: number;
 }
 
 /**
@@ -122,17 +122,17 @@ export interface LiquidityIndicators {
  */
 export interface MarketSegment {
   /** Segment identifier */
-  id: ID;
+  readonly id: ID;
   /** Segment name */
-  name: Name;
+  readonly name: Name;
   /** Property type */
-  propertyType: PropertyType;
+  readonly propertyType: PropertyType;
   /** Location or region */
-  locationId?: string;
+  readonly locationId?: string;
   /** Price range */
-  priceRange?: {
-    min: Money;
-    max: Money;
+  readonly priceRange?: {
+    readonly min: Money;
+    readonly max: Money;
   };
 }
 
@@ -146,17 +146,17 @@ export interface MarketSegment {
  */
 export interface ComparableReference {
   /** Comparable identifier */
-  id: ID;
+  readonly id: ID;
   /** Property reference */
-  propertyId: ID;
+  readonly propertyId: ID;
   /** Transaction date */
-  transactionDate: Timestamp;
+  readonly transactionDate: Timestamp;
   /** Transaction price */
-  transactionPrice: Money;
+  readonly transactionPrice: Money;
   /** Data source */
-  source: DataSource;
+  readonly source: DataSource;
   /** Similarity score (0-1) */
-  similarityScore: number;
+  readonly similarityScore: number;
 }
 
 /**
@@ -169,25 +169,25 @@ export interface ComparableReference {
  */
 export interface MarketSnapshot {
   /** Unique snapshot identifier */
-  id: ID;
+  readonly id: ID;
   /** Market segment */
-  segment: MarketSegment;
+  readonly segment: MarketSegment;
   /** Temporal context */
-  timestamp: MarketTimestamp;
+  readonly timestamp: MarketTimestamp;
   /** Price indicators */
-  prices: PriceIndicators;
+  readonly prices: PriceIndicators;
   /** Supply indicators */
-  supply: SupplyIndicators;
+  readonly supply: SupplyIndicators;
   /** Demand indicators */
-  demand: DemandIndicators;
+  readonly demand: DemandIndicators;
   /** Liquidity indicators */
-  liquidity: LiquidityIndicators;
+  readonly liquidity: LiquidityIndicators;
   /** Transaction volume */
-  volume: TransactionVolume;
+  readonly volume: TransactionVolume;
   /** Comparable references */
-  comparables: ComparableReference[];
+  readonly comparables: readonly ComparableReference[];
   /** Data source */
-  source: DataSource;
+  readonly source: DataSource;
   /** Additional indicators */
-  extensions?: Record<string, unknown>;
+  readonly extensions?: Readonly<Record<string, unknown>>;
 }

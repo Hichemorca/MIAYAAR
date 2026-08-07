@@ -24,9 +24,9 @@ import { ID, Name, Description, Code, Nullable, Optional } from './primitives';
  */
 export interface Coordinates {
   /** Latitude in decimal degrees */
-  latitude: number;
+  readonly latitude: number;
   /** Longitude in decimal degrees */
-  longitude: number;
+  readonly longitude: number;
 }
 
 /**
@@ -36,9 +36,9 @@ export interface Coordinates {
  */
 export interface Country {
   /** Country code (ISO 3166-1 alpha-2) */
-  code: Code;
+  readonly code: Code;
   /** Country name */
-  name: Name;
+  readonly name: Name;
 }
 
 /**
@@ -49,11 +49,11 @@ export interface Country {
  */
 export interface Region {
   /** Region code */
-  code: Code;
+  readonly code: Code;
   /** Region name */
-  name: Name;
+  readonly name: Name;
   /** Optional reference to parent country */
-  country?: Country;
+  readonly country?: Country;
 }
 
 /**
@@ -63,11 +63,11 @@ export interface Region {
  */
 export interface City {
   /** City code or identifier */
-  code: Code;
+  readonly code: Code;
   /** City name */
-  name: Name;
+  readonly name: Name;
   /** Optional reference to parent region */
-  region?: Region;
+  readonly region?: Region;
 }
 
 /**
@@ -78,11 +78,11 @@ export interface City {
  */
 export interface District {
   /** District code or identifier */
-  code: Code;
+  readonly code: Code;
   /** District name */
-  name: Name;
+  readonly name: Name;
   /** Optional reference to parent city */
-  city?: City;
+  readonly city?: City;
 }
 
 /**
@@ -93,11 +93,11 @@ export interface District {
  */
 export interface Neighborhood {
   /** Neighborhood code or identifier */
-  code: Code;
+  readonly code: Code;
   /** Neighborhood name */
-  name: Name;
+  readonly name: Name;
   /** Optional reference to parent district */
-  district?: District;
+  readonly district?: District;
 }
 
 /**
@@ -107,10 +107,10 @@ export interface Neighborhood {
  */
 export interface PostalCode {
   /** Postal code value */
-  code: Code;
+  readonly code: Code;
   /** Optional reference to parent location */
-  region?: Region;
-  city?: City;
+  readonly region?: Region;
+  readonly city?: City;
 }
 
 /**
@@ -120,19 +120,19 @@ export interface PostalCode {
  */
 export interface Address {
   /** Building name or number */
-  building?: string;
+  readonly building?: string;
   /** Street name or number */
-  street?: string;
+  readonly street?: string;
   /** Unit number or apartment identifier */
-  unit?: string;
+  readonly unit?: string;
   /** Postal code */
-  postalCode?: PostalCode;
+  readonly postalCode?: PostalCode;
   /** Optional reference to location hierarchy */
-  neighborhood?: Neighborhood;
-  district?: District;
-  city?: City;
-  region?: Region;
-  country?: Country;
+  readonly neighborhood?: Neighborhood;
+  readonly district?: District;
+  readonly city?: City;
+  readonly region?: Region;
+  readonly country?: Country;
 }
 
 /**
@@ -143,13 +143,13 @@ export interface Address {
  */
 export interface AdministrativeArea {
   /** Area identifier */
-  id: ID;
+  readonly id: ID;
   /** Area name */
-  name: Name;
+  readonly name: Name;
   /** Level of administrative division */
-  level: number;
+  readonly level: number;
   /** Optional reference to parent area */
-  parentId?: ID;
+  readonly parentId?: ID;
 }
 
 /**
@@ -163,19 +163,19 @@ export interface AdministrativeArea {
  */
 export interface Location {
   /** Unique location identifier */
-  id: ID;
+  readonly id: ID;
   /** Geographic coordinates (optional) */
-  coordinates?: Coordinates;
+  readonly coordinates?: Coordinates;
   /** Complete address */
-  address: Address;
+  readonly address: Address;
   /** Administrative hierarchy */
-  neighborhood?: Neighborhood;
-  district?: District;
-  city?: City;
-  region?: Region;
-  country?: Country;
+  readonly neighborhood?: Neighborhood;
+  readonly district?: District;
+  readonly city?: City;
+  readonly region?: Region;
+  readonly country?: Country;
   /** Postal code */
-  postalCode?: PostalCode;
+  readonly postalCode?: PostalCode;
   /** Additional location metadata */
-  metadata?: Record<string, unknown>;
+  readonly metadata?: Readonly<Record<string, unknown>>;
 }
