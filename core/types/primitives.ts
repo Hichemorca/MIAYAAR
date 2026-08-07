@@ -1,17 +1,6 @@
 ﻿/**
  * Core Types Module - Primitives
  * 
- * Defines fundamental primitive types used across the platform.
- * 
- * Contains basic type aliases and utility types that serve as building blocks
- * for all domain entities.
- * 
- * @module core/types/primitives
- */
-
-/**
- * Core Types Module - Primitives
- * 
  * Defines fundamental primitive types shared across the entire platform.
  * 
  * These types are completely domain-independent and serve as building blocks
