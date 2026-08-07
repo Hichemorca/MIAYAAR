@@ -56,7 +56,7 @@ The objective of IMP-001 is to implement Core Types exactly as defined by the ap
 
 ---
 
-## 4. Files to Create
+## 4. Files in Scope
 
 | File Path | Purpose |
 |-----------|---------|
@@ -162,6 +162,7 @@ The following files are outside the scope of IMP-001 and must not be modified:
 
 - No imports outside TypeScript standard library.
 - No external dependencies.
+- No circular imports exist anywhere inside `core/types`.
 
 ### Documentation
 
