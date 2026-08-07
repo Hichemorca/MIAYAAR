@@ -76,6 +76,7 @@ Document the rejected alternatives.
 | ADR-003 | Entity Contracts vs Value Object Contracts | Accepted | 2026-08-07 |
 | ADR-004 | Canonical Contracts are Immutable by Design | Accepted | 2026-08-07 |
 | ADR-005 | Business Vocabulary Rule | Accepted | 2026-08-07 |
+| ADR-006 | Separation of Property Condition and Building Condition | Accepted | 2026-08-07 |
 
 ---
 
