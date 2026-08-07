@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Core is the foundation of the AQAR Decision Intelligence Platform. It defines what the platform is, not how it works.
+Core is the foundation of the MIAYAAR Decision Intelligence Platform. It defines what the platform is, not how it works.
 
 All modules depend on Core. Core depends on nothing. This unidirectional dependency ensures that the platform's fundamental concepts remain stable while engines, services, and products evolve independently.
 
@@ -23,7 +23,7 @@ Core is the abstraction layer. It defines interfaces without implementations, co
 
 ### types/
 
-Common type definitions used across the entire platform. Contains primitive types, utility types, and shared enumerations that are not specific to any single domain.
+Canonical immutable contracts shared across the entire platform. Contains primitive types, domain entities, value objects, enumerations, and metadata definitions. These contracts are the official business language of the platform.
 
 ### errors/
 
@@ -36,10 +36,6 @@ Result Object standard definition and status enums. Defines the contract that ev
 ### contracts/
 
 Engine interfaces, provider interfaces, and service boundaries. Defines the contracts that engines implement and the interfaces that data providers fulfill. Abstracts implementation details behind clear, stable boundaries.
-
-### domain/
-
-Core business entities that represent the platform's subject matter. Contains entities such as Property, Comparable, MarketData, Location, Valuation, Confidence, Evidence, Report, and UserRequest. These entities are the shared vocabulary of the platform.
 
 ## Dependency Rules
 

@@ -25,7 +25,7 @@ It must not infer additional architectural changes.
 | ID | Title | ADR | Priority | Status |
 |----|-------|-----|----------|--------|
 | IMP-001 | Platform Metadata | ADR-002 | Critical | Pending |
-| IMP-002 | Building Condition | ADR-003 | Critical | Pending |
+| IMP-002 | Building Condition | ADR-006 | Critical | Pending |
 | IMP-003 | Business Vocabulary | ADR-005 | Critical | Pending |
 | IMP-004 | Immutable Contracts | ADR-004 | Critical | Pending |
 | IMP-005 | Documentation Cleanup | - | Low | Pending |
@@ -64,7 +64,7 @@ Replace local audit fields in `Valuation` and `Confidence` with the shared `Meta
 
 ### IMP-002: Building Condition
 
-**ADR:** ADR-003
+**ADR:** ADR-006
 
 **Priority:** Critical
 
@@ -216,3 +216,4 @@ Core Types Freeze Review may begin only when:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-08-07 | Architecture Board | Initial release |
+| 1.1 | 2026-08-07 | Architecture Board | IMP-002 now references ADR-006 |

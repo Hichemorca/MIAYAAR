@@ -1,4 +1,4 @@
-# AQAR Decision Intelligence Platform
+﻿# MIAYAAR Decision Intelligence Platform
 # Product Roadmap
 
 **Version:** 1.0
@@ -8,7 +8,7 @@
 
 # Purpose
 
-This document records approved future capabilities of the AQAR Decision Intelligence Platform.
+This document records approved future capabilities of the MIAYAAR Decision Intelligence Platform.
 
 It is not a task list.
 
