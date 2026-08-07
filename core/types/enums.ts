@@ -137,3 +137,42 @@ export enum ConfidenceLevel {
   LOW = 'LOW',
   BASIC = 'BASIC',
 }
+
+/**
+ * FurnishedStatus
+ * 
+ * Represents the furnishing status of a property.
+ * Used for adjustment factors in valuation calculations.
+ */
+export enum FurnishedStatus {
+  FURNISHED = 'FURNISHED',
+  SEMI_FURNISHED = 'SEMI_FURNISHED',
+  UNFURNISHED = 'UNFURNISHED',
+}
+
+/**
+ * FinishQuality
+ * 
+ * Represents the finish quality of a property.
+ * Used for adjustment factors in valuation calculations.
+ */
+export enum FinishQuality {
+  LUXURY = 'LUXURY',
+  GOOD = 'GOOD',
+  NORMAL = 'NORMAL',
+  BASIC = 'BASIC',
+  POOR = 'POOR',
+}
+
+/**
+ * StreetPosition
+ * 
+ * Represents the street position of a property.
+ * Used for adjustment factors in valuation calculations.
+ */
+export enum StreetPosition {
+  MAIN_STREET = 'MAIN_STREET',
+  CORNER_PLOT = 'CORNER_PLOT',
+  SECONDARY_STREET = 'SECONDARY_STREET',
+  QUIET_STREET = 'QUIET_STREET',
+}

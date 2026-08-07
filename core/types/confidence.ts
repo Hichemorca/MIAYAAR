@@ -13,6 +13,8 @@
  */
 
 import { ID, Timestamp, Name, Description, Nullable } from './primitives';
+import { Metadata } from './metadata';
+import { ConfidenceLevel } from './enums';
 
 /**
  * ConfidenceFactor
@@ -24,21 +26,21 @@ import { ID, Timestamp, Name, Description, Nullable } from './primitives';
  */
 export interface ConfidenceFactor {
   /** Factor identifier */
-  id: ID;
+  readonly id: ID;
   /** Factor name */
-  name: Name;
+  readonly name: Name;
   /** Factor description */
-  description: Description;
+  readonly description: Description;
   /** Factor score (0-1) */
-  score: number;
+  readonly score: number;
   /** Score contribution weight (0-1) */
-  weight: number;
+  readonly weight: number;
   /** Justification for the score */
-  justification: string;
+  readonly justification: string;
   /** Supporting evidence references */
-  evidenceReferences?: string[];
+  readonly evidenceReferences?: readonly string[];
   /** Data quality status */
-  dataQuality: string;
+  readonly dataQuality: string;
 }
 
 /**
@@ -48,15 +50,15 @@ export interface ConfidenceFactor {
  */
 export interface ConfidenceAssessment {
   /** Assessment identifier */
-  id: ID;
+  readonly id: ID;
   /** Reference to the valuation being assessed */
-  valuationId: ID;
+  readonly valuationId: ID;
   /** Confidence factors evaluated */
-  factors: ConfidenceFactor[];
+  readonly factors: readonly ConfidenceFactor[];
   /** Assessment timestamp */
-  assessedAt: Timestamp;
+  readonly assessedAt: Timestamp;
   /** Assessment version */
-  version: string;
+  readonly version: string;
 }
 
 /**
@@ -69,15 +71,15 @@ export interface ConfidenceAssessment {
  */
 export interface OverallConfidence {
   /** Overall confidence level */
-  level: string;
+  readonly level: ConfidenceLevel;
   /** Overall confidence score (0-1) */
-  score: number;
+  readonly score: number;
   /** Confidence interpretation */
-  interpretation: string;
+  readonly interpretation: string;
   /** Lower bound of confidence range */
-  lowerBound?: number;
+  readonly lowerBound?: number;
   /** Upper bound of confidence range */
-  upperBound?: number;
+  readonly upperBound?: number;
 }
 
 /**
@@ -92,15 +94,17 @@ export interface OverallConfidence {
  */
 export interface Confidence {
   /** Unique confidence identifier */
-  id: ID;
+  readonly id: ID;
   /** Reference to the valuation */
-  valuationId: ID;
+  readonly valuationId: ID;
   /** Confidence assessment */
-  assessment: ConfidenceAssessment;
+  readonly assessment: ConfidenceAssessment;
   /** Overall confidence summary */
-  overall: OverallConfidence;
+  readonly overall: OverallConfidence;
+  /** Technical metadata */
+  readonly metadata: Metadata;
   /** Creation timestamp */
-  createdAt: Timestamp;
+  readonly createdAt: Timestamp;
   /** Additional notes */
-  notes?: string;
+  readonly notes?: string;
 }

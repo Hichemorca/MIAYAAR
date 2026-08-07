@@ -20,7 +20,11 @@ import {
   PropertyCondition, 
   BuildingCondition,
   UsageType, 
-  FloorLevel 
+  FloorLevel,
+  ViewType,
+  FurnishedStatus,
+  FinishQuality,
+  StreetPosition
 } from './enums';
 
 /**
@@ -30,15 +34,15 @@ import {
  */
 export interface PropertyIdentity {
   /** Unique property identifier */
-  id: ID;
+  readonly id: ID;
   /** External reference identifier */
-  externalId?: string;
+  readonly externalId?: string;
   /** Parcel or plot number */
-  parcelNumber?: string;
+  readonly parcelNumber?: string;
   /** Title deed number */
-  titleDeedNumber?: string;
+  readonly titleDeedNumber?: string;
   /** Property code or reference */
-  propertyCode?: Code;
+  readonly propertyCode?: Code;
 }
 
 /**
@@ -48,13 +52,13 @@ export interface PropertyIdentity {
  */
 export interface PropertyClassification {
   /** Property type */
-  type: PropertyType;
+  readonly type: PropertyType;
   /** Usage type */
-  usage: UsageType;
+  readonly usage: UsageType;
   /** Property status */
-  status: Status;
+  readonly status: Status;
   /** Sub-type or specific category */
-  subType?: string;
+  readonly subType?: string;
 }
 
 /**
@@ -64,23 +68,23 @@ export interface PropertyClassification {
  */
 export interface PhysicalCharacteristics {
   /** Total area in square meters */
-  totalArea: number;
+  readonly totalArea: number;
   /** Built-up area in square meters */
-  builtUpArea?: number;
+  readonly builtUpArea?: number;
   /** Land area in square meters */
-  landArea?: number;
+  readonly landArea?: number;
   /** Number of bedrooms */
-  bedrooms?: number;
+  readonly bedrooms?: number;
   /** Number of bathrooms */
-  bathrooms?: number;
+  readonly bathrooms?: number;
   /** Number of parking spaces */
-  parkingSpaces?: number;
+  readonly parkingSpaces?: number;
   /** Floor level */
-  floorLevel?: FloorLevel;
+  readonly floorLevel?: FloorLevel;
   /** Year built */
-  yearBuilt?: number;
+  readonly yearBuilt?: number;
   /** Number of floors in building */
-  totalFloors?: number;
+  readonly totalFloors?: number;
 }
 
 /**
@@ -92,17 +96,17 @@ export interface PhysicalCharacteristics {
  */
 export interface StructuralCharacteristics {
   /** Physical condition of the property itself */
-  propertyCondition: PropertyCondition;
+  readonly propertyCondition: PropertyCondition;
   /** Physical condition of the building containing the property */
-  buildingCondition: BuildingCondition;
+  readonly buildingCondition: BuildingCondition;
   /** Finish quality */
-  finishQuality?: string;
+  readonly finishQuality?: FinishQuality;
   /** Furnished status */
-  furnished?: string;
+  readonly furnished?: FurnishedStatus;
   /** View type */
-  viewType?: string;
+  readonly viewType?: ViewType;
   /** Street position */
-  streetPosition?: string;
+  readonly streetPosition?: StreetPosition;
 }
 
 /**
@@ -112,15 +116,15 @@ export interface StructuralCharacteristics {
  */
 export interface LegalCharacteristics {
   /** Ownership type */
-  ownershipType?: string;
+  readonly ownershipType?: string;
   /** Freehold or leasehold */
-  tenureType?: string;
+  readonly tenureType?: string;
   /** Zoning classification */
-  zoning?: string;
+  readonly zoning?: string;
   /** Legal restrictions */
-  restrictions?: string[];
+  readonly restrictions?: readonly string[];
   /** Easements or encumbrances */
-  encumbrances?: string[];
+  readonly encumbrances?: readonly string[];
 }
 
 /**
@@ -130,11 +134,11 @@ export interface LegalCharacteristics {
  */
 export interface PropertyName {
   /** Property name */
-  name: Name;
+  readonly name: Name;
   /** Property description */
-  description: Description;
+  readonly description: Description;
   /** Alternative names or aliases */
-  aliases?: Name[];
+  readonly aliases?: readonly Name[];
 }
 
 /**
@@ -157,19 +161,19 @@ export interface PropertyName {
  */
 export interface Property {
   /** Property identity */
-  identity: PropertyIdentity;
+  readonly identity: PropertyIdentity;
   /** Property name and description */
-  name: PropertyName;
+  readonly name: PropertyName;
   /** Property classification */
-  classification: PropertyClassification;
+  readonly classification: PropertyClassification;
   /** Location information */
-  location: Location;
+  readonly location: Location;
   /** Physical characteristics */
-  physical: PhysicalCharacteristics;
+  readonly physical: PhysicalCharacteristics;
   /** Structural characteristics */
-  structural: StructuralCharacteristics;
+  readonly structural: StructuralCharacteristics;
   /** Legal characteristics */
-  legal: LegalCharacteristics;
+  readonly legal: LegalCharacteristics;
   /** Technical metadata */
-  metadata: Metadata;
+  readonly metadata: Metadata;
 }

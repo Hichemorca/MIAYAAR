@@ -13,6 +13,7 @@
 import { ID, Timestamp, Version } from './primitives';
 import { Money } from './financial';
 import { PropertyType } from './enums';
+import { Metadata } from './metadata';
 
 /**
  * ValuationIdentifier
@@ -21,13 +22,13 @@ import { PropertyType } from './enums';
  */
 export interface ValuationIdentifier {
   /** Unique valuation identifier */
-  id: ID;
+  readonly id: ID;
   /** Reference to the property being valued */
-  propertyId: ID;
+  readonly propertyId: ID;
   /** Reference to the market snapshot used */
-  marketSnapshotId: ID;
+  readonly marketSnapshotId: ID;
   /** Valuation version */
-  version: Version;
+  readonly version: Version;
 }
 
 /**
@@ -37,15 +38,15 @@ export interface ValuationIdentifier {
  */
 export interface ValuationApproachResult {
   /** Approach name */
-  approach: string;
+  readonly approach: string;
   /** Approach weight applied */
-  weight: number;
+  readonly weight: number;
   /** Value estimated by this approach */
-  value: Money;
+  readonly value: Money;
   /** Approach confidence score (0-1) */
-  confidence: number;
+  readonly confidence: number;
   /** Approach-specific metadata */
-  metadata?: Record<string, unknown>;
+  readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
 /**
@@ -55,37 +56,37 @@ export interface ValuationApproachResult {
  */
 export interface ValuationResult {
   /** Final valuation value */
-  value: Money;
+  readonly value: Money;
   /** Lower bound of valuation range */
-  lowerBound?: Money;
+  readonly lowerBound?: Money;
   /** Upper bound of valuation range */
-  upperBound?: Money;
+  readonly upperBound?: Money;
   /** Valuation range width as percentage of value */
-  rangeWidthPercent?: number;
+  readonly rangeWidthPercent?: number;
   /** Individual approach results */
-  approachResults: ValuationApproachResult[];
+  readonly approachResults: readonly ValuationApproachResult[];
   /** Methodology name or identifier */
-  methodology: string;
+  readonly methodology: string;
   /** Methodology version */
-  methodologyVersion: Version;
+  readonly methodologyVersion: Version;
 }
 
 /**
  * ValuationMetadata
  * 
- * Represents valuation metadata.
+ * Represents valuation business metadata.
  */
 export interface ValuationMetadata {
   /** Valuation type */
-  type: string;
+  readonly type: string;
   /** Property type */
-  propertyType: PropertyType;
+  readonly propertyType: PropertyType;
   /** Valuation date */
-  valuationDate: Timestamp;
+  readonly valuationDate: Timestamp;
   /** Valuation purpose */
-  purpose?: string;
+  readonly purpose?: string;
   /** Currency used */
-  currency: string;
+  readonly currency: string;
 }
 
 /**
@@ -100,13 +101,15 @@ export interface ValuationMetadata {
  */
 export interface Valuation {
   /** Valuation identifier */
-  id: ValuationIdentifier;
-  /** Valuation metadata */
-  metadata: ValuationMetadata;
+  readonly id: ValuationIdentifier;
+  /** Business metadata */
+  readonly valuationMetadata: ValuationMetadata;
+  /** Technical metadata */
+  readonly metadata: Metadata;
   /** Valuation result */
-  result: ValuationResult;
+  readonly result: ValuationResult;
   /** Valuation creation timestamp */
-  createdAt: Timestamp;
+  readonly createdAt: Timestamp;
   /** Additional notes or comments */
-  notes?: string;
+  readonly notes?: string;
 }
