@@ -58,6 +58,8 @@ Future implications.
 Alternatives Considered
 Document the rejected alternatives.
 
+text
+
 ## Why ADRs Are Mandatory
 
 - **Historical Record**: Future developers understand why decisions were made.
@@ -66,13 +68,15 @@ Document the rejected alternatives.
 - **Onboarding**: New team members understand the architecture quickly.
 - **Accountability**: Decisions are transparent and reviewable.
 
-## Current ADRs
+## ADR Index
 
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
 | ADR-001 | Core Types as Canonical Immutable Domain Contracts | Accepted | 2026-08-07 |
 | ADR-002 | Platform Audit Metadata | Accepted | 2026-08-07 |
 | ADR-003 | Entity Contracts vs Value Object Contracts | Accepted | 2026-08-07 |
+| ADR-004 | Canonical Contracts are Immutable by Design | Accepted | 2026-08-07 |
+| ADR-005 | Business Vocabulary Rule | Accepted | 2026-08-07 |
 
 ---
 
