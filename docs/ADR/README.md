@@ -58,7 +58,6 @@ Future implications.
 Alternatives Considered
 Document the rejected alternatives.
 
-
 ## Why ADRs Are Mandatory
 
 - **Historical Record**: Future developers understand why decisions were made.
@@ -77,6 +76,8 @@ Document the rejected alternatives.
 | ADR-004 | Canonical Contracts are Immutable by Design | Accepted | 2026-08-07 |
 | ADR-005 | Business Vocabulary Rule | Accepted | 2026-08-07 |
 | ADR-006 | Separation of Property Condition and Building Condition | Accepted | 2026-08-07 |
+| ADR-007 | Standardized Result Object Contract | Accepted | 2026-08-08 |
+| ADR-008 | Core Contracts Module | Accepted | 2026-08-08 |
 
 ---
 
