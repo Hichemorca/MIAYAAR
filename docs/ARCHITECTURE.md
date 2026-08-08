@@ -73,7 +73,6 @@ The platform treats valuation as the initial capability, with architectural prov
 │ FINAL RESPONSE │
 └─────────────────────────────────────────────────────────┘
 
-text
 
 ---
 
@@ -224,7 +223,6 @@ Providers are initialized at system startup. The Orchestrator manages provider s
 │ RESPONSE │
 └─────────────────┘
 
-text
 
 ---
 
