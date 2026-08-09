@@ -6,7 +6,7 @@
  * @module engines/valuation/types
  */
 
-import { Property, MarketSnapshot, Location, Metadata } from '../../../core/types';
+import { Property, MarketSnapshot } from '../../../core/types';
 
 /**
  * ValuationRequest
@@ -21,8 +21,6 @@ export interface ValuationRequest {
   property: Property;
   /** Market context for the valuation */
   market: MarketSnapshot;
-  /** Optional request metadata */
-  metadata?: Metadata;
 }
 
 /**
@@ -69,54 +67,4 @@ export interface ApproachResult {
     baseline: number;
     upper: number;
   };
-}
-
-/**
- * ScenarioConfiguration
- *
- * Configuration for a single scenario.
- *
- * @internal
- */
-export interface ScenarioConfiguration {
-  /** Scenario name */
-  name: 'lower' | 'baseline' | 'upper';
-  /** Weights for each approach */
-  weights: ApproachWeights;
-  /** Adjustment factors */
-  adjustments: AdjustmentFactors;
-}
-
-/**
- * ApproachWeights
- *
- * Weights for each valuation approach.
- *
- * @internal
- */
-export interface ApproachWeights {
-  salesComparison: number;
-  incomeCapitalization: number;
-  cost: number;
-  dcf: number;
-}
-
-/**
- * AdjustmentFactors
- *
- * Adjustment factors for a scenario.
- *
- * @internal
- */
-export interface AdjustmentFactors {
-  propertyCondition: number;
-  buildingCondition: number;
-  viewType: number;
-  floorLevel: number;
-  streetPosition: number;
-  finishQuality: number;
-  furnishedStatus: number;
-  sizeCategory: number;
-  ageDepreciation: number;
-  gisPenalty: number;
 }
