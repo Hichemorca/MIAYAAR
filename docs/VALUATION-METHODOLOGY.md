@@ -98,7 +98,7 @@ This document defines the valuation methodology implemented in the MIAYAAR Valua
 
 **Purpose:** Estimate value using projected future cash flows.
 
-**Applicable Property Types:** Apartment, Villa, Townhouse, Office, Retail.
+**Applicable Property Types:** Apartment, Villa, Townhouse, Office, Retail, Land.
 
 **Advantages:** Captures future potential.
 
@@ -507,6 +507,7 @@ Where MonthlyGrowthRate is computed from historical data per district and type.
 | GIS Calibration | -0.03 | Market over-values proximity; compensates | Back-testing | Approved | 2026-08-04 |
 | Sea View Premium | +15% | Highest demand view type | Market data | Approved | 2026-08-04 |
 | Age Depreciation | Table-based | Standard market depreciation rates | Industry practice | Approved | 2026-08-04 |
+| DCF Applicability to Land | DCF applies to Land | Resolves inconsistency between §4.4 exclusion and §5.6 Land weights; captures future development potential | Methodology consistency review | Approved | 2026-08-09 |
 
 ---
 
@@ -534,6 +535,7 @@ Where MonthlyGrowthRate is computed from historical data per district and type.
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-08-07 | MIAYAAR Engineering | Initial frozen version |
+| 1.1 | 2026-08-09 | MIAYAAR Engineering | §4.4: added Land to DCF applicability; §11: added decision log entry |
 
 ---
 
