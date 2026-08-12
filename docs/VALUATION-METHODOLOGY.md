@@ -1,11 +1,11 @@
-﻿# MIAYAAR Valuation Engine — Methodology
+# MIAYAAR Valuation Engine — Methodology
 
 ---
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Frozen
 **Owner:** MIAYAAR Engineering
-**Last Review:** 2026-08-04
+**Last Review:** 2026-08-09
 **Next Review:** 2027-02-04
 **Document ID:** MIAYAAR-METH-001
 **Classification:** Internal Standard
@@ -605,7 +605,6 @@ All calibration changes require:
 - Automated calibration pipeline
 
 ---
-
 ## 16. Known Limitations
 
 ### 16.1 Data

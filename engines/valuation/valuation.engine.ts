@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Valuation Engine
  *
  * Core decision engine for property valuation.
@@ -10,9 +10,9 @@
  * @module engines/valuation/valuation.engine
  */
 
-import { IEngine } from '../../../core/contracts';
-import { Result, ResultStatus } from '../../../core/results';
-import { ID, Timestamp } from '../../../core/types';
+import { IEngine } from '../../core/contracts';
+import { Result, ResultStatus } from '../../core/results';
+import { ID, Timestamp } from '../../core/types';
 import { ValuationRequest, ValuationResult } from './types';
 
 /**
@@ -63,7 +63,7 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationResul
       baselineValue: 0,
       upperValue: 0,
       approachResults: [],
-      methodologyVersion: '1.0',
+      methodologyVersion: '1.1',
     };
 
     const result: Result<ValuationResult> = {
