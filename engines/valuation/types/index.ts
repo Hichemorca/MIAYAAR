@@ -6,65 +6,54 @@
  * @module engines/valuation/types
  */
 
-import { Property, MarketSnapshot } from '../../../core/types';
+import { Property, MarketSnapshot, Valuation } from '../../../core/types';
 
 /**
  * ValuationRequest
  *
  * Input contract for the Valuation Engine.
  *
- * Represents one valuation execution. Supports Lower, Baseline, and Upper scenarios
- * through the methodology parameters supplied via configuration.
+ * Represents one valuation execution. Scenario (Lower/Baseline/Upper) handling
+ * and methodology parameters are supplied through the platform's established
+ * architecture (see ADR-009). The exact mechanism remains an unresolved
+ * implementation decision per IMP-005 §20 and is not defined here.
  */
 export interface ValuationRequest {
   /** The property to be valued */
-  property: Property;
+  readonly property: Property;
   /** Market context for the valuation */
-  market: MarketSnapshot;
+  readonly market: MarketSnapshot;
 }
 
 /**
- * ValuationResult
+ * ValuationOutcome
  *
- * Output contract for the Valuation Engine.
+ * Output contract for the Valuation Engine's IEngine<TRequest, TData>
+ * implementation.
  *
- * Contains the complete valuation result including scenario outputs.
+ * This is NOT a valuation result, and it is not a duplicate of, or
+ * alternative to, `Valuation` / `ValuationResult` from core/types. It exists
+ * only to make "no valuation is available" a real, type-safe value rather
+ * than a fabricated one, since `Result<TData>.data` is mandatory and cannot
+ * be null or omitted.
+ *
+ * When `available` is `true`, `valuation` is the canonical, frozen
+ * `Valuation` domain entity from core/types -- the single source of truth
+ * for a completed valuation result. This engine never defines its own
+ * valuation result shape.
  */
-export interface ValuationResult {
-  /** Final consolidated value */
-  value: number;
-  /** Lower scenario value */
-  lowerValue: number;
-  /** Baseline scenario value */
-  baselineValue: number;
-  /** Upper scenario value */
-  upperValue: number;
-  /** Confidence range lower bound */
-  lowerBound?: number;
-  /** Confidence range upper bound */
-  upperBound?: number;
-  /** Individual approach results */
-  approachResults: ApproachResult[];
-  /** Methodology version used */
-  methodologyVersion: string;
-}
-
-/**
- * ApproachResult
- *
- * Result from a single valuation approach.
- */
-export interface ApproachResult {
-  /** Approach name */
-  name: string;
-  /** Calculated value */
-  value: number;
-  /** Weight applied */
-  weight: number;
-  /** Scenario values */
-  scenarioValues: {
-    lower: number;
-    baseline: number;
-    upper: number;
-  };
-}
+export type ValuationOutcome =
+  | {
+      /** No valuation was produced by this execution. */
+      readonly available: false;
+      /** Machine-readable reason code for why no valuation is available. */
+      readonly reasonCode: string;
+      /** Human-readable explanation of why no valuation is available. */
+      readonly reason: string;
+    }
+  | {
+      /** A valuation was produced by this execution. */
+      readonly available: true;
+      /** The canonical valuation result, as defined in core/types. */
+      readonly valuation: Valuation;
+    };
