@@ -1,4 +1,4 @@
-# Architecture Decision Records (ADR)
+﻿# Architecture Decision Records (ADR)
 
 ## Purpose
 
@@ -78,6 +78,7 @@ Document the rejected alternatives.
 | ADR-006 | Separation of Property Condition and Building Condition | Accepted | 2026-08-07 |
 | ADR-007 | Standardized Result Object Contract | Accepted | 2026-08-08 |
 | ADR-008 | Core Contracts Module | Accepted | 2026-08-08 |
+| ADR-009 | Valuation Engine | Accepted | 2026-08-08 |
 
 ---
 
