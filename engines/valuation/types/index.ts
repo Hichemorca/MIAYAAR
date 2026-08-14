@@ -7,6 +7,9 @@
  */
 
 import { Property, MarketSnapshot, Valuation } from '../../../core/types';
+import { ValuationData } from './valuation-data.contracts';
+
+export * from './valuation-data.contracts';
 
 /**
  * ValuationRequest
@@ -23,6 +26,8 @@ export interface ValuationRequest {
   readonly property: Property;
   /** Market context for the valuation */
   readonly market: MarketSnapshot;
+  /** Approach-specific input data (optional) */
+  readonly data?: ValuationData;
 }
 
 /**

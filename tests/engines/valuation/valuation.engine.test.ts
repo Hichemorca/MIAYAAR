@@ -9,10 +9,22 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ValuationEngine, ValuationRequest } from '../../../engines/valuation';
-import { ResultStatus } from '../../../core/results';
+import { ValuationEngine } from '../../../engines/valuation';
+import {
+  ValuationRequest,
+  ValuationData,
+} from '../../../engines/valuation/types';
 import { minimalProperty } from '../../fixtures/property.fixture';
 import { minimalMarketSnapshot } from '../../fixtures/market.fixture';
+import {
+  apartmentValuationData,
+  emptyValuationData,
+  apartmentComparables,
+  apartmentIncomeData,
+  apartmentCostData,
+  apartmentDCFData,
+} from '../../fixtures/valuation-data.fixture';
+import { ResultStatus } from '../../../core/results';
 
 test('ValuationEngine reports an error for a request missing property', async () => {
   const engine = new ValuationEngine();
@@ -43,7 +55,7 @@ test('ValuationEngine reports an error for a request missing market', async () =
   }
 });
 
-test('ValuationEngine reports "not implemented" for a structurally valid request, never a numeric value', async () => {
+test('ValuationEngine reports "not implemented" for a structurally valid request with no approach data', async () => {
   const engine = new ValuationEngine();
   const request: ValuationRequest = {
     property: minimalProperty,
@@ -68,6 +80,246 @@ test('ValuationEngine reports "not implemented" for a structurally valid request
 
   assert.equal(result.errors.length, 1);
   assert.equal(result.errors[0].code, 'VAL_ERR_NOT_IMPLEMENTED');
+});
+
+test('ValuationEngine reports PARTIAL when complete approach data is available but calculation is deferred', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: apartmentValuationData,
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.PARTIAL);
+  assert.equal(result.data.available, false);
+
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_PARTIAL_DATA_AVAILABLE');
+    // Still no numeric fields, even though data exists.
+    assert.equal('value' in result.data, false);
+    assert.equal('lowerValue' in result.data, false);
+    assert.equal('baselineValue' in result.data, false);
+    assert.equal('upperValue' in result.data, false);
+  }
+
+  assert.equal(result.errors.length, 1);
+  assert.equal(result.errors[0].code, 'VAL_PARTIAL_DATA_AVAILABLE');
+});
+
+test('ValuationEngine reports ERROR when empty ValuationData is provided (treated as no data)', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: emptyValuationData,
+  };
+
+  const result = await engine.execute(request);
+
+  // Empty data object is equivalent to no data -> ERROR, not PARTIAL.
+  // Data must be non-empty to be considered "available".
+  assert.equal(result.status, ResultStatus.ERROR);
+  assert.equal(result.data.available, false);
+
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_ERR_NOT_IMPLEMENTED');
+  }
+});
+
+test('ValuationEngine reports PARTIAL with only comparables data', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      comparables: apartmentComparables,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.PARTIAL);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_PARTIAL_DATA_AVAILABLE');
+  }
+});
+
+test('ValuationEngine reports PARTIAL with only income data', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      income: apartmentIncomeData,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.PARTIAL);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_PARTIAL_DATA_AVAILABLE');
+  }
+});
+
+test('ValuationEngine reports PARTIAL with only cost data', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      cost: apartmentCostData,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.PARTIAL);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_PARTIAL_DATA_AVAILABLE');
+  }
+});
+
+test('ValuationEngine reports PARTIAL with only DCF data', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      dcf: apartmentDCFData,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.PARTIAL);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_PARTIAL_DATA_AVAILABLE');
+  }
+});
+
+test('ValuationEngine reports ERROR when comparables array is empty', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      comparables: [],
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  // Empty comparables array is not usable structural data
+  assert.equal(result.status, ResultStatus.ERROR);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_ERR_NOT_IMPLEMENTED');
+  }
+});
+
+test('ValuationEngine reports ERROR when income data is incomplete (missing field)', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      income: {
+        grossRent: { amount: 75000, currency: { code: 'AED', name: 'UAE Dirham', symbol: 'AED', decimalPlaces: 2 } },
+        vacancyRate: 0.10,
+        operatingExpenses: 0.20,
+        // capRate is missing
+      } as any,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  // Incomplete income data is not usable
+  assert.equal(result.status, ResultStatus.ERROR);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_ERR_NOT_IMPLEMENTED');
+  }
+});
+
+test('ValuationEngine reports ERROR when cost data is incomplete (missing field)', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      cost: {
+        replacementCostPerSqm: { amount: 8000, currency: { code: 'AED', name: 'UAE Dirham', symbol: 'AED', decimalPlaces: 2 } },
+        // depreciationFactor is missing
+      } as any,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.ERROR);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_ERR_NOT_IMPLEMENTED');
+  }
+});
+
+test('ValuationEngine reports ERROR when DCF data is incomplete (missing field)', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      dcf: {
+        initialNOI: { amount: 60000, currency: { code: 'AED', name: 'UAE Dirham', symbol: 'AED', decimalPlaces: 2 } },
+        projectionPeriod: 10,
+        rentalGrowthRate: 0.02,
+        discountRate: 0.10,
+        exitCapRate: 0.075,
+        // exitCosts is missing
+      } as any,
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  assert.equal(result.status, ResultStatus.ERROR);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_ERR_NOT_IMPLEMENTED');
+  }
+});
+
+test('ValuationEngine reports ERROR when comparable has no salePrice', async () => {
+  const engine = new ValuationEngine();
+  const request: ValuationRequest = {
+    property: minimalProperty,
+    market: minimalMarketSnapshot,
+    data: {
+      comparables: [
+        {
+          area: 100,
+          saleDate: '2026-01-01',
+        } as any,
+      ],
+    },
+  };
+
+  const result = await engine.execute(request);
+
+  // Missing salePrice means the comparable is not structurally valid
+  assert.equal(result.status, ResultStatus.ERROR);
+  assert.equal(result.data.available, false);
+  if (!result.data.available) {
+    assert.equal(result.data.reasonCode, 'VAL_ERR_NOT_IMPLEMENTED');
+  }
 });
 
 test('ValuationEngine never falls back to placeholder metadata values', async () => {
