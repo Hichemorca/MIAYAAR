@@ -14,6 +14,10 @@ import { baselineValuationConfiguration } from '../../fixtures/valuation-configu
 import {
   ValuationRequest,
   ValuationData,
+  IncomeData,
+  CostData,
+  DCFData,
+  ComparableTransaction,
 } from '../../../engines/valuation/types';
 import { minimalProperty } from '../../fixtures/property.fixture';
 import { minimalMarketSnapshot } from '../../fixtures/market.fixture';
@@ -244,7 +248,7 @@ test('ValuationEngine reports ERROR when income data is incomplete (missing fiel
         vacancyRate: 0.10,
         operatingExpenses: 0.20,
         // capRate is missing
-      } as any,
+      } as unknown as IncomeData,
     },
     config: baselineValuationConfiguration,
   };
@@ -268,7 +272,7 @@ test('ValuationEngine reports ERROR when cost data is incomplete (missing field)
       cost: {
         replacementCostPerSqm: { amount: 8000, currency: { code: 'AED', name: 'UAE Dirham', symbol: 'AED', decimalPlaces: 2 } },
         // depreciationFactor is missing
-      } as any,
+      } as unknown as CostData,
     },
     config: baselineValuationConfiguration,
   };
@@ -295,7 +299,7 @@ test('ValuationEngine reports ERROR when DCF data is incomplete (missing field)'
         discountRate: 0.10,
         exitCapRate: 0.075,
         // exitCosts is missing
-      } as any,
+      } as unknown as DCFData,
     },
     config: baselineValuationConfiguration,
   };
@@ -319,7 +323,7 @@ test('ValuationEngine reports ERROR when comparable has no salePrice', async () 
         {
           area: 100,
           saleDate: '2026-01-01',
-        } as any,
+        } as unknown as ComparableTransaction,
       ],
     },
     config: baselineValuationConfiguration,
