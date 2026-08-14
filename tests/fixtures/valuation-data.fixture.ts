@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Valuation Data Fixtures
  *
  * Provides deterministic, methodology-aligned test data for the Valuation Engine.
@@ -15,6 +15,7 @@ import {
   DCFData,
   ValuationData,
 } from '../../engines/valuation/types/valuation-data.contracts';
+import { ValuationConfiguration } from '../../engines/valuation/types/valuation-configuration.contracts';
 
 /**
  * Creates a Money object for testing.
@@ -99,6 +100,63 @@ export const apartmentDCFData: DCFData = {
   discountRate: 0.10,
   exitCapRate: 0.075,
   exitCosts: 0.05,
+};
+
+/**
+ * Apartment ValuationConfiguration for testing.
+ */
+export const apartmentValuationConfiguration: ValuationConfiguration = {
+  weights: {
+    lower: { salesComparison: 0.48, incomeCapitalization: 0.37, cost: 0.10, dcf: 0.05 },
+    baseline: { salesComparison: 0.50, incomeCapitalization: 0.35, cost: 0.10, dcf: 0.05 },
+    upper: { salesComparison: 0.52, incomeCapitalization: 0.33, cost: 0.10, dcf: 0.05 },
+  },
+  assumptions: {
+    vacancyRate: 0.10,
+    operatingExpenses: 0.20,
+    capRate: 0.07,
+    rentalGrowthRate: 0.02,
+    discountRate: 0.10,
+    exitCosts: 0.05,
+  },
+  adjustments: {
+    lower: {
+      condition: 0.80,
+      buildingCondition: 0.80,
+      viewType: 0.80,
+      floorLevel: 0.80,
+      streetPosition: 0.80,
+      finishQuality: 0.80,
+      furnishedStatus: 0.80,
+      sizeCategory: 0.80,
+      ageDepreciation: 0.80,
+      gisPenalty: 0.80,
+    },
+    baseline: {
+      condition: 1.00,
+      buildingCondition: 1.00,
+      viewType: 1.00,
+      floorLevel: 1.00,
+      streetPosition: 1.00,
+      finishQuality: 1.00,
+      furnishedStatus: 1.00,
+      sizeCategory: 1.00,
+      ageDepreciation: 1.00,
+      gisPenalty: 1.00,
+    },
+    upper: {
+      condition: 1.20,
+      buildingCondition: 1.20,
+      viewType: 1.20,
+      floorLevel: 1.20,
+      streetPosition: 1.20,
+      finishQuality: 1.20,
+      furnishedStatus: 1.20,
+      sizeCategory: 1.20,
+      ageDepreciation: 1.20,
+      gisPenalty: 1.20,
+    },
+  },
 };
 
 /**

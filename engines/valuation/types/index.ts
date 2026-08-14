@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Valuation Engine Types Module
  *
  * Defines internal types for the Valuation Engine.
@@ -8,8 +8,10 @@
 
 import { Property, MarketSnapshot, Valuation } from '../../../core/types';
 import { ValuationData } from './valuation-data.contracts';
+import { ValuationConfiguration } from './valuation-configuration.contracts';
 
 export * from './valuation-data.contracts';
+export * from './valuation-configuration.contracts';
 
 /**
  * ValuationRequest
@@ -19,7 +21,7 @@ export * from './valuation-data.contracts';
  * Represents one valuation execution. Scenario (Lower/Baseline/Upper) handling
  * and methodology parameters are supplied through the platform's established
  * architecture (see ADR-009). The exact mechanism remains an unresolved
- * implementation decision per IMP-005 §20 and is not defined here.
+ * implementation decision per IMP-005 �20 and is not defined here.
  */
 export interface ValuationRequest {
   /** The property to be valued */
@@ -28,6 +30,9 @@ export interface ValuationRequest {
   readonly market: MarketSnapshot;
   /** Approach-specific input data (optional) */
   readonly data?: ValuationData;
+  readonly config: ValuationConfiguration;
+
+  readonly requestId?: string;
 }
 
 /**

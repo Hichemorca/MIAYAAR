@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Tests for the Valuation Engine's current contract-safe stub behavior.
  *
  * These tests intentionally do NOT test any calculation logic, since none
@@ -10,6 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ValuationEngine } from '../../../engines/valuation';
+import { baselineValuationConfiguration } from '../../fixtures/valuation-configuration.fixture';
 import {
   ValuationRequest,
   ValuationData,
@@ -60,6 +61,7 @@ test('ValuationEngine reports "not implemented" for a structurally valid request
   const request: ValuationRequest = {
     property: minimalProperty,
     market: minimalMarketSnapshot,
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -88,6 +90,7 @@ test('ValuationEngine reports PARTIAL when complete approach data is available b
     property: minimalProperty,
     market: minimalMarketSnapshot,
     data: apartmentValuationData,
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -114,6 +117,7 @@ test('ValuationEngine reports ERROR when empty ValuationData is provided (treate
     property: minimalProperty,
     market: minimalMarketSnapshot,
     data: emptyValuationData,
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -136,6 +140,7 @@ test('ValuationEngine reports PARTIAL with only comparables data', async () => {
     data: {
       comparables: apartmentComparables,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -155,6 +160,7 @@ test('ValuationEngine reports PARTIAL with only income data', async () => {
     data: {
       income: apartmentIncomeData,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -174,6 +180,7 @@ test('ValuationEngine reports PARTIAL with only cost data', async () => {
     data: {
       cost: apartmentCostData,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -193,6 +200,7 @@ test('ValuationEngine reports PARTIAL with only DCF data', async () => {
     data: {
       dcf: apartmentDCFData,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -212,6 +220,7 @@ test('ValuationEngine reports ERROR when comparables array is empty', async () =
     data: {
       comparables: [],
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -237,6 +246,7 @@ test('ValuationEngine reports ERROR when income data is incomplete (missing fiel
         // capRate is missing
       } as any,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -260,6 +270,7 @@ test('ValuationEngine reports ERROR when cost data is incomplete (missing field)
         // depreciationFactor is missing
       } as any,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -286,6 +297,7 @@ test('ValuationEngine reports ERROR when DCF data is incomplete (missing field)'
         // exitCosts is missing
       } as any,
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -310,6 +322,7 @@ test('ValuationEngine reports ERROR when comparable has no salePrice', async () 
         } as any,
       ],
     },
+    config: baselineValuationConfiguration,
   };
 
   const result = await engine.execute(request);
@@ -327,6 +340,7 @@ test('ValuationEngine never falls back to placeholder metadata values', async ()
   const result = await engine.execute({
     property: minimalProperty,
     market: minimalMarketSnapshot,
+    config: baselineValuationConfiguration,
   });
 
   assert.equal(typeof result.metadata.requestId, 'string');
