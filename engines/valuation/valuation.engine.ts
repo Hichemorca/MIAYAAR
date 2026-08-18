@@ -1,282 +1,317 @@
 /**
- * Valuation Engine
+ * Deterministic MIAYAAR-METH-001 v1.1 valuation engine.
  *
- * Core decision engine for property valuation.
- *
- * Implements IEngine<TRequest, TData> and returns standardized Result objects.
- * Calculation logic for the four valuation approaches (Sales Comparison, Income
- * Capitalization, Cost, DCF) and Lower/Baseline/Upper scenario execution
- * mechanics are deferred per IMP-005 (Unresolved Implementation Decisions).
- *
- * This engine does not fabricate placeholder valuation data. Every execution
- * currently reports, explicitly and unambiguously via ValuationOutcome, that
- * no valuation is available -- it never returns a numeric value (including
- * zero) that could be mistaken for a real financial result.
+ * This engine receives prepared evidence and configuration only. It does not
+ * access external services, mutable state, system time, or other engines.
  *
  * @module engines/valuation/valuation.engine
  */
 
 import { IEngine } from '../../core/contracts';
-import { Result, ResultStatus, ErrorInfo } from '../../core/results';
-import { Timestamp } from '../../core/types';
+import { ErrorInfo, Result, ResultStatus, Warning } from '../../core/results';
+import { Money, PropertyType, Timestamp, Valuation, ValuationApproachResult } from '../../core/types';
 import {
-  ValuationRequest,
-  ValuationOutcome,
-  ValuationData,
   ComparableTransaction,
-  IncomeData,
   CostData,
   DCFData,
+  IncomeData,
+  ValuationConfiguration,
+  ValuationData,
+  ValuationOutcome,
+  ValuationRequest,
 } from './types';
 
-/**
- * ValuationEngine
- *
- * Primary valuation engine implementing the approved methodology.
- *
- * Deterministic and isolated per ADR-009. Calculation logic is not yet
- * implemented; every invocation reports that outcome explicitly rather than
- * returning fabricated data.
- */
+type Scenario = 'lower' | 'baseline' | 'upper';
+type ApproachKey = 'salesComparison' | 'incomeCapitalization' | 'cost' | 'dcf';
+
+interface CalculatedApproach {
+  readonly key: ApproachKey;
+  readonly label: string;
+  readonly value: number;
+  readonly metadata: Readonly<Record<string, unknown>>;
+}
+
+interface ScenarioResult {
+  readonly value: number;
+  readonly approachResults: readonly ValuationApproachResult[];
+}
+
+const ENGINE_VERSION = '1.1.0';
+const METHODOLOGY_VERSION = '1.1';
+const METHODOLOGY_NAME = 'MIAYAAR Valuation Methodology';
+const WEIGHT_TOLERANCE = 0.000001;
+
+/** Executes sales comparison, income capitalization, cost, and DCF approaches. */
 export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutcome> {
-  /**
-   * Executes a valuation.
-   *
-   * Calculation logic (approach execution, weighting, scenario handling,
-   * result aggregation) is deferred per IMP-005 §20 Unresolved Implementation
-   * Decisions. This method does not produce a valuation even when approach
-   * data is supplied -- data availability is not valuation completeness.
-   *
-   * @param request - The valuation request containing property and market data.
-   * @returns A promise resolving to a standardized Result object.
-   */
+  /** Executes a complete lower, baseline, and upper valuation deterministically. */
   async execute(request: ValuationRequest): Promise<Result<ValuationOutcome>> {
-    if (!request.property || !request.market) {
-      return this.buildUnavailableResult(
-        'VAL_ERR_INVALID_REQUEST',
-        'Invalid request: property and market are required.'
-      );
+    if (!request?.property || !request.market || !request.config) {
+      return this.unavailable('VAL_ERR_INVALID_REQUEST', 'Property, market, and configuration are required.', request);
+    }
+    const configurationError = this.validateConfiguration(request.config);
+    if (configurationError) return this.unavailable('VAL_ERR_INVALID_CONFIGURATION', configurationError, request);
+
+    const currency = this.resolveCurrency(request);
+    if (!currency) {
+      return this.unavailable('VAL_ERR_CURRENCY_MISMATCH', 'All valuation inputs must use one ISO currency.', request);
     }
 
-    // Check which approaches have structurally valid data
-    const availability = this.getApproachAvailability(request.data);
-
-    const hasAnyData = availability.salesComparison ||
-                       availability.incomeCapitalization ||
-                       availability.cost ||
-                       availability.dcf;
-
-    if (hasAnyData) {
-      // Data is available, but no calculation has been performed.
-      // This is PARTIAL, not SUCCESS -- the engine has not produced a valuation.
-      return this.buildPartialResult(
-        'VAL_PARTIAL_DATA_AVAILABLE',
-        'Approach data is available, but valuation calculation is deferred per IMP-005 unresolved implementation decisions.'
-      );
-    }
-
-    // No data available and no calculation performed.
-    return this.buildUnavailableResult(
-      'VAL_ERR_NOT_IMPLEMENTED',
-      'Valuation calculation is not yet implemented; deferred per IMP-005 unresolved implementation decisions.'
+    const calculated = this.calculateApproaches(
+      request.data,
+      request.property.classification.type,
+      request.property.physical.totalArea
     );
-  }
+    if (calculated.approaches.length === 0) {
+      return this.unavailable(
+        'VAL_ERR_INSUFFICIENT_DATA',
+        'No applicable approach has sufficient valid prepared data.',
+        request,
+        calculated.warnings
+      );
+    }
 
-  /**
-   * Determines which approaches have structurally valid data.
-   *
-   * This validates structural completeness only — it does not validate
-   * business logic, market plausibility, or data quality.
-   *
-   * @internal
-   */
-  private getApproachAvailability(data?: ValuationData): {
-    salesComparison: boolean;
-    incomeCapitalization: boolean;
-    cost: boolean;
-    dcf: boolean;
-  } {
-    if (!data) {
-      return {
-        salesComparison: false,
-        incomeCapitalization: false,
-        cost: false,
-        dcf: false,
+    let scenarios: Record<Scenario, ScenarioResult>;
+    try {
+      scenarios = {
+        lower: this.runScenario('lower', calculated.approaches, request.config, currency),
+        baseline: this.runScenario('baseline', calculated.approaches, request.config, currency),
+        upper: this.runScenario('upper', calculated.approaches, request.config, currency),
       };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No positive active approach weight is available.';
+      return this.unavailable('VAL_ERR_NO_ACTIVE_WEIGHT', message, request, calculated.warnings);
     }
 
+    const scenarioValues = [scenarios.lower.value, scenarios.baseline.value, scenarios.upper.value];
+    const warnings = [
+      ...calculated.warnings,
+      ...this.missingApproachWarnings(request.property.classification.type, calculated.approaches),
+    ];
+    const valuation = this.buildValuation(
+      request,
+      currency,
+      scenarios.baseline.value,
+      Math.min(...scenarioValues),
+      Math.max(...scenarioValues),
+      scenarios.baseline.approachResults
+    );
+
     return {
-      salesComparison: this.hasValidComparables(data.comparables),
-      incomeCapitalization: this.hasValidIncomeData(data.income),
-      cost: this.hasValidCostData(data.cost),
-      dcf: this.hasValidDCFData(data.dcf),
+      status: warnings.length ? ResultStatus.PARTIAL : ResultStatus.SUCCESS,
+      data: { available: true, valuation },
+      warnings,
+      errors: [],
+      metadata: this.resultMetadata(request),
     };
   }
 
-  /**
-   * Validates Sales Comparison data: at least one structurally complete
-   * comparable transaction.
-   *
-   * A comparable is structurally complete if it has:
-   * - salePrice (Money with amount present)
-   * - area (number)
-   * - saleDate (non-empty string)
-   *
-   * No minimum count is enforced beyond "at least one".
-   *
-   * @internal
-   */
-  private hasValidComparables(comparables?: ComparableTransaction[]): boolean {
-    if (!comparables || comparables.length === 0) {
-      return false;
-    }
+  private calculateApproaches(data: ValuationData | undefined, type: PropertyType, area: number): {
+    readonly approaches: readonly CalculatedApproach[];
+    readonly warnings: readonly Warning[];
+  } {
+    if (!data || !Number.isFinite(area) || area <= 0) return { approaches: [], warnings: [] };
+    const approaches: CalculatedApproach[] = [];
+    const warnings: Warning[] = [];
+    const validComparables = (data.comparables ?? []).filter((item) => this.validComparable(item));
 
-    return comparables.some((comp) => {
-      return (
-        comp.salePrice !== undefined &&
-        comp.salePrice.amount !== undefined &&
-        comp.area !== undefined &&
-        typeof comp.saleDate === 'string' &&
-        comp.saleDate.length > 0
-      );
-    });
+    if (validComparables.length >= 5) {
+      approaches.push(this.salesComparison(validComparables, area));
+    } else if (data.comparables?.length) {
+      warnings.push(this.warning('VAL_WARN_INSUFFICIENT_COMPARABLES', `Sales comparison requires at least 5 valid comparables; received ${validComparables.length}.`));
+    }
+    if (this.allowsIncome(type) && this.validIncome(data.income)) approaches.push(this.incomeCapitalization(data.income));
+    if (this.allowsCost(type) && this.validCost(data.cost)) approaches.push(this.costApproach(data.cost, area));
+    if (this.allowsDcf(type) && this.validDcf(data.dcf)) approaches.push(this.dcf(data.dcf));
+    return { approaches, warnings };
   }
 
-  /**
-   * Validates Income Capitalization data: all required fields must be present.
-   *
-   * Required fields: grossRent, vacancyRate, operatingExpenses, capRate.
-   *
-   * @internal
-   */
-  private hasValidIncomeData(income?: IncomeData): boolean {
-    if (!income) {
-      return false;
-    }
-
-    return (
-      income.grossRent?.amount !== undefined &&
-      income.vacancyRate !== undefined &&
-      income.operatingExpenses !== undefined &&
-      income.capRate !== undefined
-    );
-  }
-
-  /**
-   * Validates Cost Approach data: all required fields must be present.
-   *
-   * Required fields: replacementCostPerSqm, depreciationFactor.
-   *
-   * @internal
-   */
-  private hasValidCostData(cost?: CostData): boolean {
-    if (!cost) {
-      return false;
-    }
-
-    return (
-      cost.replacementCostPerSqm?.amount !== undefined &&
-      cost.depreciationFactor !== undefined
-    );
-  }
-
-  /**
-   * Validates DCF data: all required fields must be present.
-   *
-   * Required fields: initialNOI, projectionPeriod, rentalGrowthRate,
-   * discountRate, exitCapRate, exitCosts.
-   *
-   * @internal
-   */
-  private hasValidDCFData(dcf?: DCFData): boolean {
-    if (!dcf) {
-      return false;
-    }
-
-    return (
-      dcf.initialNOI?.amount !== undefined &&
-      dcf.projectionPeriod !== undefined &&
-      dcf.rentalGrowthRate !== undefined &&
-      dcf.discountRate !== undefined &&
-      dcf.exitCapRate !== undefined &&
-      dcf.exitCosts !== undefined
-    );
-  }
-
-  /**
-   * Builds a Result whose data explicitly reports that no valuation is
-   * available, alongside a matching ErrorInfo entry.
-   *
-   * This never fabricates valuation data (e.g. a zero value) and never uses
-   * an unsafe cast to satisfy the Result<TData> contract -- `data` is always
-   * a genuine, fully-typed ValuationOutcome value.
-   *
-   * @internal
-   */
-  private buildUnavailableResult(code: string, message: string): Result<ValuationOutcome> {
-    const outcome: ValuationOutcome = {
-      available: false,
-      reasonCode: code,
-      reason: message,
-    };
-
-    const error: ErrorInfo = { code, message };
-
+  /** Sales comparison = arithmetic mean of adjusted comparable price per sqm × subject area. */
+  private salesComparison(comparables: readonly ComparableTransaction[], area: number): CalculatedApproach {
+    const values = comparables.map((item) => (item.salePrice.amount / item.area) * area * this.product(Object.values(item.adjustments ?? {})));
     return {
-      status: ResultStatus.ERROR,
-      data: outcome,
-      warnings: [],
-      errors: [error],
+      key: 'salesComparison',
+      label: 'Sales Comparison',
+      value: this.round(values.reduce((total, value) => total + value, 0) / values.length),
+      metadata: { comparableCount: comparables.length, statistic: 'arithmeticMeanAdjustedValue' },
+    };
+  }
+
+  /** Income capitalization = NOI ÷ cap rate. */
+  private incomeCapitalization(income: IncomeData): CalculatedApproach {
+    const noi = income.grossRent.amount * (1 - income.vacancyRate) * (1 - income.operatingExpenses);
+    return {
+      key: 'incomeCapitalization', label: 'Income Capitalization', value: this.round(noi / income.capRate),
+      metadata: { netOperatingIncome: this.round(noi), capRate: income.capRate },
+    };
+  }
+
+  /** Cost approach = depreciated replacement cost + prepared land component. */
+  private costApproach(cost: CostData, area: number): CalculatedApproach {
+    const buildingValue = area * cost.replacementCostPerSqm.amount * (1 - cost.depreciationFactor);
+    const landValue = cost.landValue?.amount ?? 0;
+    return {
+      key: 'cost', label: 'Cost Approach', value: this.round(buildingValue + landValue),
+      metadata: { buildingValue: this.round(buildingValue), landValue },
+    };
+  }
+
+  /** DCF = discounted annual NOI plus discounted net terminal value. */
+  private dcf(data: DCFData): CalculatedApproach {
+    let presentValue = 0;
+    for (let year = 1; year <= data.projectionPeriod; year += 1) {
+      const noi = data.initialNOI.amount * Math.pow(1 + data.rentalGrowthRate, year);
+      presentValue += noi / Math.pow(1 + data.discountRate, year);
+    }
+    const terminalNoi = data.initialNOI.amount * Math.pow(1 + data.rentalGrowthRate, data.projectionPeriod + 1);
+    const netTerminalValue = (terminalNoi / data.exitCapRate) * (1 - data.exitCosts);
+    presentValue += netTerminalValue / Math.pow(1 + data.discountRate, data.projectionPeriod);
+    return {
+      key: 'dcf', label: 'Discounted Cash Flow', value: this.round(presentValue),
+      metadata: { projectionPeriod: data.projectionPeriod, discountRate: data.discountRate, exitCapRate: data.exitCapRate },
+    };
+  }
+
+  private runScenario(
+    scenario: Scenario,
+    approaches: readonly CalculatedApproach[],
+    config: ValuationConfiguration,
+    currency: Money['currency']
+  ): ScenarioResult {
+    const weights = config.weights[scenario];
+    const activeWeight = approaches.reduce((total, approach) => total + weights[approach.key], 0);
+    if (activeWeight <= WEIGHT_TOLERANCE) throw new Error(`The ${scenario} scenario has no positive active approach weight.`);
+    const multiplier = this.product(Object.values(config.adjustments[scenario]));
+    const approachResults = approaches.map((approach) => ({
+      approach: approach.label,
+      weight: weights[approach.key] / activeWeight,
+      value: { amount: this.round(approach.value * multiplier), currency },
+      confidence: 0,
+      metadata: { ...approach.metadata, scenario, scenarioAdjustmentMultiplier: multiplier },
+    } satisfies ValuationApproachResult));
+    return {
+      value: this.round(approachResults.reduce((total, item) => total + item.value.amount * item.weight, 0)),
+      approachResults,
+    };
+  }
+
+  private buildValuation(
+    request: ValuationRequest,
+    currency: Money['currency'],
+    value: number,
+    lowerBound: number,
+    upperBound: number,
+    approachResults: readonly ValuationApproachResult[]
+  ): Valuation {
+    const timestamp = request.market.timestamp.asOf;
+    const id = this.valuationId(request);
+    return {
+      id: { id, propertyId: request.property.identity.id, marketSnapshotId: request.market.id, version: ENGINE_VERSION },
+      valuationMetadata: { type: 'MARKET_VALUE', propertyType: request.property.classification.type, valuationDate: timestamp, currency: currency.code },
       metadata: {
-        requestId: this.generateRequestId(),
-        engine: 'ValuationEngine',
-        version: '1.0.0',
-        timestamp: '2026-01-01T00:00:00.000Z' as Timestamp,
+        id: `metadata:${id}`,
+        timestamps: { createdAt: timestamp, updatedAt: timestamp },
+        audit: { createdBy: 'ValuationEngine', updatedBy: 'ValuationEngine' },
+        version: { version: ENGINE_VERSION, versionedAt: timestamp, versionedBy: 'ValuationEngine' },
+        provenance: { source: { id: request.market.id, name: 'Market Snapshot', type: request.market.source }, acquiredAt: timestamp, acquiredBy: 'ValuationEngine' },
+        status: { status: 'COMPLETED', category: 'VALUATION', statusChangedAt: timestamp },
       },
+      result: {
+        value: { amount: value, currency }, lowerBound: { amount: lowerBound, currency }, upperBound: { amount: upperBound, currency },
+        rangeWidthPercent: value === 0 ? 0 : this.round(((upperBound - lowerBound) / value) * 100),
+        approachResults, methodology: METHODOLOGY_NAME, methodologyVersion: METHODOLOGY_VERSION,
+      },
+      createdAt: timestamp,
+      notes: 'Lower, baseline, and upper scenarios executed under MIAYAAR-METH-001 v1.1.',
     };
   }
 
-  /**
-   * Builds a PARTIAL Result when data is available but no valuation calculation
-   * has been performed. This is distinct from ERROR because the request is
-   * structurally valid and data is supplied, but the engine cannot yet produce
-   * a valuation.
-   *
-   * @internal
-   */
-  private buildPartialResult(code: string, message: string): Result<ValuationOutcome> {
-    const outcome: ValuationOutcome = {
-      available: false,
-      reasonCode: code,
-      reason: message,
-    };
+  private missingApproachWarnings(type: PropertyType, calculated: readonly CalculatedApproach[]): readonly Warning[] {
+    const active = new Set(calculated.map((item) => item.key));
+    return this.applicableApproaches(type)
+      .filter((key) => !active.has(key))
+      .map((key) => this.warning('VAL_WARN_APPROACH_UNAVAILABLE', `The ${key} approach has no sufficient usable prepared data; active weights were re-normalized.`));
+  }
 
+  private applicableApproaches(type: PropertyType): readonly ApproachKey[] {
+    const values: ApproachKey[] = ['salesComparison'];
+    if (this.allowsIncome(type)) values.push('incomeCapitalization');
+    if (this.allowsCost(type)) values.push('cost');
+    if (this.allowsDcf(type)) values.push('dcf');
+    return values;
+  }
+
+  private allowsIncome(type: PropertyType): boolean {
+    return [PropertyType.APARTMENT, PropertyType.VILLA, PropertyType.TOWNHOUSE, PropertyType.OFFICE, PropertyType.RETAIL].includes(type);
+  }
+
+  private allowsCost(type: PropertyType): boolean {
+    return [PropertyType.VILLA, PropertyType.TOWNHOUSE, PropertyType.OFFICE, PropertyType.RETAIL].includes(type);
+  }
+
+  private allowsDcf(type: PropertyType): boolean {
+    return this.allowsIncome(type) || type === PropertyType.LAND;
+  }
+
+  private validateConfiguration(config: ValuationConfiguration): string | undefined {
+    for (const scenario of ['lower', 'baseline', 'upper'] as const) {
+      const weights = Object.values(config.weights[scenario]);
+      if (weights.some((value) => !Number.isFinite(value) || value < 0)) return `The ${scenario} scenario has an invalid approach weight.`;
+      const total = weights.reduce((sum, value) => sum + value, 0);
+      if (Math.abs(total - 1) > WEIGHT_TOLERANCE) return `The ${scenario} scenario weights must sum to 1.0; received ${total}.`;
+      if (Object.values(config.adjustments[scenario]).some((value) => !Number.isFinite(value) || value <= 0)) return `The ${scenario} scenario has an invalid adjustment multiplier.`;
+    }
+    const assumptions = Object.values(config.assumptions);
+    if (assumptions.some((value) => !Number.isFinite(value) || value < 0 || value >= 1)) return 'Market assumptions must be decimal rates in [0, 1).';
+    if (config.assumptions.capRate <= 0 || config.assumptions.discountRate <= 0) return 'Capitalization and discount rates must be greater than zero.';
+    return undefined;
+  }
+
+  private resolveCurrency(request: ValuationRequest): Money['currency'] | undefined {
+    const money = [
+      request.market.prices.pricePerSqm,
+      ...(request.data?.comparables?.map((item) => item.salePrice) ?? []),
+      request.data?.income?.grossRent, request.data?.cost?.replacementCostPerSqm,
+      request.data?.cost?.landValue, request.data?.dcf?.initialNOI,
+    ].filter((item): item is Money => Boolean(item));
+    const currency = money[0]?.currency;
+    return currency && money.every((item) => item.currency.code === currency.code) ? currency : undefined;
+  }
+
+  private validComparable(data: ComparableTransaction): boolean {
+    return Boolean(data && this.validMoney(data.salePrice) && Number.isFinite(data.area) && data.area > 0 && typeof data.saleDate === 'string' && data.saleDate.length && Object.values(data.adjustments ?? {}).every((value) => Number.isFinite(value) && value > 0));
+  }
+
+  private validIncome(data: IncomeData | undefined): data is IncomeData {
+    return Boolean(data && this.validMoney(data.grossRent) && this.rate(data.vacancyRate) && this.rate(data.operatingExpenses) && this.rate(data.capRate) && data.capRate > 0);
+  }
+
+  private validCost(data: CostData | undefined): data is CostData {
+    return Boolean(data && this.validMoney(data.replacementCostPerSqm) && this.rate(data.depreciationFactor) && (!data.landValue || this.validMoney(data.landValue)));
+  }
+
+  private validDcf(data: DCFData | undefined): data is DCFData {
+    return Boolean(data && this.validMoney(data.initialNOI) && Number.isInteger(data.projectionPeriod) && data.projectionPeriod > 0 && this.rate(data.rentalGrowthRate) && this.rate(data.discountRate) && data.discountRate > 0 && this.rate(data.exitCapRate) && data.exitCapRate > 0 && this.rate(data.exitCosts));
+  }
+
+  private validMoney(data: Money | undefined): data is Money {
+    return Boolean(data && Number.isFinite(data.amount) && data.amount >= 0 && data.currency?.code);
+  }
+
+  private rate(value: number): boolean { return Number.isFinite(value) && value >= 0 && value < 1; }
+  private product(values: readonly number[]): number { return values.reduce((total, value) => total * value, 1); }
+  private round(value: number): number { return Math.round((value + Number.EPSILON) * 100) / 100; }
+  private warning(code: string, message: string): Warning { return { code, message }; }
+  private valuationId(request: ValuationRequest): string { return `valuation:${request.property.identity.id}:${request.market.id}:${request.requestId ?? 'default'}`; }
+
+  private resultMetadata(request: ValuationRequest) {
+    return { requestId: request.requestId ?? this.valuationId(request), engine: 'ValuationEngine', version: ENGINE_VERSION, timestamp: request.market.timestamp.asOf as Timestamp };
+  }
+
+  private unavailable(code: string, message: string, request?: Partial<ValuationRequest>, warnings: readonly Warning[] = []): Result<ValuationOutcome> {
     const error: ErrorInfo = { code, message };
-
     return {
-      status: ResultStatus.PARTIAL,
-      data: outcome,
-      warnings: [],
-      errors: [error],
-      metadata: {
-        requestId: this.generateRequestId(),
-        engine: 'ValuationEngine',
-        version: '1.0.0',
-        timestamp: '2026-01-01T00:00:00.000Z' as Timestamp,
-      },
+      status: ResultStatus.ERROR, data: { available: false, reasonCode: code, reason: message }, warnings, errors: [error],
+      metadata: { requestId: request?.requestId ?? 'invalid-request', engine: 'ValuationEngine', version: ENGINE_VERSION, timestamp: request?.market?.timestamp?.asOf ?? '1970-01-01T00:00:00.000Z' },
     };
-  }
-
-  /**
-   * Generates a deterministic local request correlation identifier.
-   *
-   * This is a temporary fallback until the Orchestrator provides
-   * request correlation IDs. It satisfies ADR-007's metadata requirements
-   * while preserving IMP-005 §9 determinism.
-   *
-   * @internal
-   */
-  private generateRequestId(): string {
-    return 'local-fallback';
   }
 }
