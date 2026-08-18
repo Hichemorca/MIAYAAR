@@ -31,6 +31,7 @@ import {
   ValuationOutcome,
   ValuationRequest,
 } from './types';
+import { METHODOLOGY_DOCUMENT_ID, METHODOLOGY_VERSION } from './methodology-v1_2';
 
 type Scenario = 'lower' | 'baseline' | 'upper';
 type ApproachKey = 'salesComparison' | 'incomeCapitalization' | 'cost' | 'dcf';
@@ -49,8 +50,6 @@ interface ScenarioValuation {
 }
 
 const SCENARIOS: readonly Scenario[] = ['lower', 'baseline', 'upper'];
-const METHODOLOGY_ID = 'MIAYAAR-METH-001';
-const METHODOLOGY_VERSION = '1.1';
 const ENGINE_VERSION = '1.1.0';
 
 const roundMoney = (amount: number): number => Math.round((amount + Number.EPSILON) * 100) / 100;
@@ -343,7 +342,7 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
         upperBound: scenarios.upper.total,
         rangeWidthPercent,
         approachResults: baseline.approaches,
-        methodology: METHODOLOGY_ID,
+        methodology: METHODOLOGY_DOCUMENT_ID,
         methodologyVersion: METHODOLOGY_VERSION,
       },
       createdAt: timestamp,
@@ -378,7 +377,7 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
       audit: { createdBy: 'engine:valuation', updatedBy: 'engine:valuation' },
       version: { version: ENGINE_VERSION, versionedAt: timestamp, versionedBy: 'engine:valuation', changeDescription: 'Created by the canonical valuation engine.' },
       provenance: {
-        source: { id: METHODOLOGY_ID, name: 'MIAYAAR frozen valuation methodology', type: 'METHODOLOGY', version: METHODOLOGY_VERSION },
+        source: { id: METHODOLOGY_DOCUMENT_ID, name: 'MIAYAAR frozen valuation methodology', type: 'METHODOLOGY', version: METHODOLOGY_VERSION },
         acquiredAt: timestamp,
         acquiredBy: 'engine:valuation',
         pipelineVersion: ENGINE_VERSION,

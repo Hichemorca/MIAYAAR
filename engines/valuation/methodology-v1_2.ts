@@ -16,7 +16,11 @@ type ScenarioValues = Readonly<Record<Scenario, number>>;
 type ScenarioWeights = Readonly<Record<Scenario, ApproachWeights>>;
 
 export const METHODOLOGY_DOCUMENT_ID = 'MIAYAAR-METH-001';
-export const METHODOLOGY_VERSION = '1.1';
+/**
+ * v1.1 remains immutable in the methodology registry. This release records the
+ * canonical LAND taxonomy and makes WAREHOUSE explicitly unsupported.
+ */
+export const METHODOLOGY_VERSION = '1.2';
 
 const scenarios = (lower: ApproachWeights, baseline: ApproachWeights, upper: ApproachWeights): ScenarioWeights => ({ lower, baseline, upper });
 const factor = (lower: number, baseline: number, upper: number): ScenarioValues => ({ lower: 1 + lower, baseline: 1 + baseline, upper: 1 + upper });
@@ -86,7 +90,7 @@ const furnishedFactors: Readonly<Record<FurnishedStatus, ScenarioValues>> = {
   [FurnishedStatus.UNFURNISHED]: factor(-.03, -.02, -.01),
 };
 
-export const frozenMethodologyV11 = {
+export const frozenMethodologyV12 = {
   documentId: METHODOLOGY_DOCUMENT_ID,
   version: METHODOLOGY_VERSION,
   status: 'frozen' as const,
@@ -107,7 +111,7 @@ export const frozenMethodologyV11 = {
 /** Verifies that each frozen scenario remains a complete methodology allocation. */
 export function validateFrozenMethodology(): readonly string[] {
   const errors: string[] = [];
-  for (const [propertyType, byScenario] of Object.entries(frozenMethodologyV11.weightsByPropertyType)) {
+  for (const [propertyType, byScenario] of Object.entries(frozenMethodologyV12.weightsByPropertyType)) {
     for (const [scenario, weights] of Object.entries(byScenario ?? {})) {
       const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
       if (Math.abs(total - 1) > 0.000001) errors.push(`${propertyType}.${scenario} weights must sum to 1.0`);
@@ -133,19 +137,19 @@ function adjustmentSet(property: Property, scenario: Scenario): AdjustmentFactor
 
 /** Selects the frozen methodology configuration for one canonical property. */
 export function resolveValuationConfiguration(property: Property): ValuationConfiguration | undefined {
-  const weights = frozenMethodologyV11.weightsByPropertyType[property.classification.type];
+  const weights = frozenMethodologyV12.weightsByPropertyType[property.classification.type];
   if (!weights) return undefined;
   return {
     weights,
     assumptions: {
-      vacancyRate: frozenMethodologyV11.assumptions.vacancyRate,
-      operatingExpenses: frozenMethodologyV11.assumptions.operatingExpenseRate,
+      vacancyRate: frozenMethodologyV12.assumptions.vacancyRate,
+      operatingExpenses: frozenMethodologyV12.assumptions.operatingExpenseRate,
       capRate: property.classification.type === PropertyType.OFFICE || property.classification.type === PropertyType.RETAIL
-        ? frozenMethodologyV11.assumptions.commercialCapRate
-        : frozenMethodologyV11.assumptions.residentialCapRate,
-      rentalGrowthRate: frozenMethodologyV11.assumptions.rentGrowthRate,
-      discountRate: frozenMethodologyV11.assumptions.discountRate,
-      exitCosts: frozenMethodologyV11.assumptions.exitCostRate,
+        ? frozenMethodologyV12.assumptions.commercialCapRate
+        : frozenMethodologyV12.assumptions.residentialCapRate,
+      rentalGrowthRate: frozenMethodologyV12.assumptions.rentGrowthRate,
+      discountRate: frozenMethodologyV12.assumptions.discountRate,
+      exitCosts: frozenMethodologyV12.assumptions.exitCostRate,
     },
     adjustments: {
       lower: adjustmentSet(property, 'lower'),

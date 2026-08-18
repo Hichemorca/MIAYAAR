@@ -6,7 +6,7 @@ import { resolveProductionMethodology } from "../../valuation/methodology-regist
 import { assessConfidence } from "../confidence/confidence";
 import { assembleReport, type ValuationReport } from "../reporting/valuation-report";
 import { ValuationEngine } from "../../../engines/valuation/valuation.engine";
-import { resolveValuationConfiguration } from "../../../engines/valuation/methodology-v1_1";
+import { resolveValuationConfiguration } from "../../../engines/valuation/methodology-v1_2";
 import { toCanonicalMarketSnapshot, toCanonicalProperty, toCanonicalValuationData } from "./core-valuation-adapter";
 
 function validationErrors(property: PropertySubmission): string[] {

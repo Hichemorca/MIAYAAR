@@ -69,7 +69,7 @@ test('creates an immutable canonical Valuation with Money scenario bounds when a
     assert.equal(valuation.id.propertyId, minimalProperty.identity.id);
     assert.equal(valuation.id.marketSnapshotId, minimalMarketSnapshot.id);
     assert.equal(valuation.result.methodology, 'MIAYAAR-METH-001');
-    assert.equal(valuation.result.methodologyVersion, '1.1');
+    assert.equal(valuation.result.methodologyVersion, '1.2');
     assert.equal(valuation.result.value.currency.code, 'AED');
     assert.ok(valuation.result.value.amount > 0);
     assert.equal(valuation.result.approachResults.length, 4);

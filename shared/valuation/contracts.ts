@@ -1,5 +1,5 @@
 export const METHODOLOGY_DOCUMENT_ID = "MIAYAAR-METH-001";
-export const METHODOLOGY_VERSION = "1.1";
+export const METHODOLOGY_VERSION = "1.2";
 
 export type Scenario = "lower" | "baseline" | "upper";
 export type PropertyType = "apartment" | "villa" | "townhouse" | "office" | "retail" | "land" | "warehouse";

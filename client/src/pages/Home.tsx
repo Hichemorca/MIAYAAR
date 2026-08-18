@@ -128,7 +128,7 @@ export default function Home() {
       <aside className="mi-rail" aria-label="MIAYAAR methodology status">
         <a className="mi-rail-logo" href="#top"><img src={LOGO_URL} alt="MIAYAAR" /><span>MIAYAAR</span></a>
         <div className="rail-rule" />
-        <div className="rail-version"><span>Methodology</span><b>v1.1</b><small>Dubai · UAE</small></div>
+        <div className="rail-version"><span>Methodology</span><b>v1.2</b><small>Dubai · UAE</small></div>
         <span className="rail-live"><i />Engine active</span>
       </aside>
 
@@ -206,7 +206,7 @@ export default function Home() {
 
         <section className="mi-methodology-card"><div className="methodology-art" style={{ backgroundImage: `url(${DISTRICT_ART_URL})` }}><span>Decision model,<br />not a guessing model.</span></div><div><p className="mi-eyebrow">How MIAYAAR works</p><h2>Four independent views of value.</h2><p>Market comparison, income capitalization, cost, and DCF are treated as separate evidence streams. The platform names each unavailable stream rather than masking its absence.</p><div className="pill-list"><span>Market comparison</span><span>Income capitalization</span><span>Cost approach</span><span>10-year DCF</span></div><a href="#workbench"><Landmark size={15} />Review the property file</a></div></section>
 
-        <footer><div className="footer-mark"><img src={LOGO_URL} alt="" /><span>MIAYAAR</span></div><p>MIAYAAR is a decision-support platform based on MIAYAAR Methodology v1.1. It does not replace a licensed professional appraisal, legal review, or property inspection.</p><span>© 2026 · Dubai, UAE</span></footer>
+        <footer><div className="footer-mark"><img src={LOGO_URL} alt="" /><span>MIAYAAR</span></div><p>MIAYAAR is a decision-support platform based on MIAYAAR Methodology v1.2. It does not replace a licensed professional appraisal, legal review, or property inspection.</p><span>© 2026 · Dubai, UAE</span></footer>
       </div>
     </main>
   );
