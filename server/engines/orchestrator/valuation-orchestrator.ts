@@ -5,8 +5,9 @@ import { findComparableEvidence } from "../../valuation/comparable-search";
 import { resolveProductionMethodology } from "../../valuation/methodology-registry";
 import { assessConfidence } from "../confidence/confidence";
 import { assembleReport, type ValuationReport } from "../reporting/valuation-report";
-import { evaluatePropertyRules } from "../rules/property-adjustments";
-import { calculateDeterministicValuation } from "../valuation/deterministic";
+import { ValuationEngine } from "../../../engines/valuation/valuation.engine";
+import { resolveValuationConfiguration } from "../../../engines/valuation/methodology-v1_1";
+import { toCanonicalMarketSnapshot, toCanonicalProperty, toCanonicalValuationData } from "./core-valuation-adapter";
 
 function validationErrors(property: PropertySubmission): string[] {
   const errors: string[] = [];
@@ -43,14 +44,39 @@ export async function executeValuation(input: { property: PropertySubmission; us
     return { requestId, report: assembleReport({ status: "rejected", configuration, property: input.property, evidence, warnings: [warning] }) };
   }
 
-  const rules = evaluatePropertyRules(input.property, configuration);
-  await audit(requestId, "rules", "evaluated", { multipliers: rules.multipliers });
-  const valuation = calculateDeterministicValuation({ property: input.property, comparables: evidence.comparables, configuration, scenarioMultipliers: rules.multipliers });
-  await audit(requestId, "valuation", "completed", { baselineValue: valuation.scenarios.baseline.value, activeApproaches: valuation.scenarios.baseline.approaches.map(item => item.key) });
-  const confidence = assessConfidence({ lowerValue: valuation.scenarios.lower.value, baselineValue: valuation.scenarios.baseline.value, upperValue: valuation.scenarios.upper.value, comparables: evidence.comparables });
-  await audit(requestId, "confidence", "assessed", confidence);
-  const status = valuation.warnings.length ? "partial" : "completed";
-  const report = assembleReport({ status, configuration, property: input.property, evidence, rules, valuation, confidence, warnings: valuation.warnings });
+  const property = toCanonicalProperty(input.property, requestId);
+  const engineConfiguration = resolveValuationConfiguration(property);
+  if (!engineConfiguration) {
+    const warning = `No certified valuation: ${property.classification.type} has no formally approved methodology configuration.`;
+    await audit(requestId, "valuation", "rejected", { reason: "unsupported_property_type", propertyType: property.classification.type });
+    await updateValuationRequestStatus(requestId, "rejected");
+    return { requestId, report: assembleReport({ status: "rejected", configuration, property: input.property, evidence, warnings: [warning] }) };
+  }
+  const market = toCanonicalMarketSnapshot(property, evidence.comparables);
+  const data = toCanonicalValuationData(input.property, evidence.comparables, {
+    vacancyRate: configuration.assumptions.vacancyRate,
+    operatingExpenseRate: configuration.assumptions.operatingExpenseRate,
+    residentialCapRate: configuration.assumptions.residentialCapRate,
+    commercialCapRate: configuration.assumptions.commercialCapRate,
+  });
+  const engineResult = await new ValuationEngine().execute({ property, market, data, config: engineConfiguration, requestId });
+  await audit(requestId, "rules", "configured", { methodology: configuration.version, propertyType: property.classification.type, adjustments: engineConfiguration.adjustments });
+  await audit(requestId, "valuation", engineResult.data.available ? "completed" : "rejected", engineResult.data.available
+    ? { baselineValue: engineResult.data.valuation.result.value.amount, activeApproaches: engineResult.data.valuation.result.approachResults.map(item => item.approach) }
+    : { reasonCode: engineResult.data.reasonCode, reason: engineResult.data.reason });
+  if (!engineResult.data.available) {
+    const warnings = [...engineResult.warnings.map(item => item.message), ...engineResult.errors.map(item => item.message), engineResult.data.reason];
+    await updateValuationRequestStatus(requestId, "rejected");
+    return { requestId, report: assembleReport({ status: "rejected", configuration, property: input.property, evidence, warnings }) };
+  }
+  const valuation = engineResult.data.valuation;
+  const confidence = valuation.result.lowerBound && valuation.result.upperBound
+    ? assessConfidence({ lowerValue: valuation.result.lowerBound.amount, baselineValue: valuation.result.value.amount, upperValue: valuation.result.upperBound.amount, comparables: evidence.comparables })
+    : undefined;
+  if (confidence) await audit(requestId, "confidence", "assessed", confidence);
+  const warnings = [...engineResult.warnings.map(item => item.message), ...engineResult.errors.map(item => item.message)];
+  const status = engineResult.status === "partial" ? "partial" : "completed";
+  const report = assembleReport({ status, configuration, property: input.property, evidence, valuation, confidence, warnings });
   await audit(requestId, "reporting", "assembled", { status, warningCount: report.warnings.length });
   await updateValuationRequestStatus(requestId, status);
   return { requestId, report };

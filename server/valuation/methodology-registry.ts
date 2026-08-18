@@ -1,11 +1,10 @@
 import { createHash } from "node:crypto";
 import { getMethodologyVersion, upsertMethodologyVersion } from "../db";
-import { methodologyV11, validateMethodology } from "@shared/valuation/methodology-v1_1";
-import type { MethodologyConfiguration } from "@shared/valuation/contracts";
+import { frozenMethodologyV11, validateFrozenMethodology } from "../../engines/valuation/methodology-v1_1";
 
 const FROZEN_CHANGE_SUMMARY = "Initial frozen production configuration for MIAYAAR-METH-001 v1.1.";
 
-function checksum(configuration: MethodologyConfiguration): string {
+function checksum(configuration: typeof frozenMethodologyV11): string {
   return createHash("sha256").update(JSON.stringify(configuration)).digest("hex");
 }
 
@@ -14,29 +13,29 @@ function checksum(configuration: MethodologyConfiguration): string {
  * valuation can run. A mismatched stored checksum is a governance failure,
  * not a value-engine fallback condition.
  */
-export async function resolveProductionMethodology(): Promise<MethodologyConfiguration> {
-  const errors = validateMethodology(methodologyV11);
+export async function resolveProductionMethodology(): Promise<typeof frozenMethodologyV11> {
+  const errors = validateFrozenMethodology();
   if (errors.length) throw new Error(`Frozen methodology is invalid: ${errors.join("; ")}`);
 
-  const expectedChecksum = checksum(methodologyV11);
-  const stored = await getMethodologyVersion(methodologyV11.version);
+  const expectedChecksum = checksum(frozenMethodologyV11);
+  const stored = await getMethodologyVersion(frozenMethodologyV11.version);
   if (!stored) {
     await upsertMethodologyVersion({
-      version: methodologyV11.version,
+      version: frozenMethodologyV11.version,
       status: "production",
-      documentId: methodologyV11.documentId,
+      documentId: frozenMethodologyV11.documentId,
       checksum: expectedChecksum,
-      configuration: methodologyV11,
+      configuration: frozenMethodologyV11,
       changeSummary: FROZEN_CHANGE_SUMMARY,
       approvedBy: "system:methodology-registry",
       approvedAt: new Date(),
     });
-    return methodologyV11;
+    return frozenMethodologyV11;
   }
   if (stored.checksum !== expectedChecksum) {
-    throw new Error(`Stored methodology checksum for v${methodologyV11.version} does not match the frozen release.`);
+    throw new Error(`Stored methodology checksum for v${frozenMethodologyV11.version} does not match the frozen release.`);
   }
-  return methodologyV11;
+  return frozenMethodologyV11;
 }
 
-export const frozenMethodologyChecksum = checksum(methodologyV11);
+export const frozenMethodologyChecksum = checksum(frozenMethodologyV11);

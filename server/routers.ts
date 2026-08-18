@@ -6,7 +6,7 @@ import { z } from "zod";
 import { executeValuation } from "./engines/orchestrator/valuation-orchestrator";
 
 const propertySubmission = z.object({
-  propertyType: z.enum(["apartment", "villa", "townhouse", "office", "retail", "residential_land", "warehouse"]),
+  propertyType: z.enum(["apartment", "villa", "townhouse", "office", "retail", "land", "warehouse"]),
   district: z.string().min(1).max(160),
   areaSqm: z.number().positive(),
   bedrooms: z.number().int().min(0).max(20).optional(),

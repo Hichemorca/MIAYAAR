@@ -5,7 +5,7 @@
  * exists only to guard against accidental future shape or enum drift.
  */
 
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { Result, ResultStatus, Warning, ErrorInfo } from '../../../core/results';
 

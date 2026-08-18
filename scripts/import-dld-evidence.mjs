@@ -12,7 +12,7 @@ const classifications = [
   ["office", ["OFFICE"]],
   ["retail", ["RETAIL", "SHOP"]],
   ["warehouse", ["WAREHOUSE"]],
-  ["residential_land", ["LAND", "PLOT"]],
+  ["land", ["LAND", "PLOT"]],
 ];
 
 function text(...parts) {
@@ -36,7 +36,7 @@ function normalize(record) {
 
   const rawText = text(record.t, record.s);
   let rejectionReason = null;
-  if (propertyType === "residential_land" && /(COMMERCIAL|GENERAL USE)/.test(rawText)) rejectionReason = "commercial_land";
+  if (propertyType === "land" && /(COMMERCIAL|GENERAL USE)/.test(rawText)) rejectionReason = "commercial_land";
   if (salePriceAed > maxPriceAed || salePriceAed / areaSqm > maxUnitPriceAed) rejectionReason = "ultra_luxury";
   return {
     sourceTransactionId: `dld:${record.id}`,

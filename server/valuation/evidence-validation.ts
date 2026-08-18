@@ -11,7 +11,7 @@ const typeDictionary: ReadonlyArray<{ propertyType: PropertyType; terms: string[
   { propertyType: "office", terms: ["OFFICE"] },
   { propertyType: "retail", terms: ["RETAIL", "SHOP"] },
   { propertyType: "warehouse", terms: ["WAREHOUSE"] },
-  { propertyType: "residential_land", terms: ["LAND", "PLOT"] },
+  { propertyType: "land", terms: ["LAND", "PLOT"] },
 ];
 
 function canonicalText(...values: (string | null | undefined)[]) {
@@ -38,7 +38,7 @@ function rejectionFor(record: RawDldTransaction, propertyType: PropertyType | un
   if (!Number.isFinite(record.p) || record.p <= 0) return "invalid_price";
   if (!propertyType) return "unsupported_property_type";
   const text = canonicalText(record.t, record.s);
-  if (propertyType === "residential_land" && /(COMMERCIAL|GENERAL USE)/.test(text)) return "commercial_land";
+  if (propertyType === "land" && /(COMMERCIAL|GENERAL USE)/.test(text)) return "commercial_land";
   if (record.p > maxPriceAed || record.p / record.a > maxUnitPriceAed) return "ultra_luxury";
   return undefined;
 }

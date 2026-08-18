@@ -2,7 +2,7 @@ export const METHODOLOGY_DOCUMENT_ID = "MIAYAAR-METH-001";
 export const METHODOLOGY_VERSION = "1.1";
 
 export type Scenario = "lower" | "baseline" | "upper";
-export type PropertyType = "apartment" | "villa" | "townhouse" | "office" | "retail" | "residential_land" | "warehouse";
+export type PropertyType = "apartment" | "villa" | "townhouse" | "office" | "retail" | "land" | "warehouse";
 export type EvidenceLevel = "A" | "B" | "C" | "D" | "E";
 
 export type ScenarioValues = Record<Scenario, number>;

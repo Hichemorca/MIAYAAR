@@ -34,7 +34,7 @@ const propertyTypes = [
   ["townhouse", "Townhouse"],
   ["office", "Office"],
   ["retail", "Retail"],
-  ["residential_land", "Residential land"],
+  ["land", "Land"],
   ["warehouse", "Warehouse"],
 ] as const;
 
@@ -104,9 +104,10 @@ export default function Home() {
     onSuccess: () => window.setTimeout(() => document.getElementById("valuation-report")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80),
   });
   const report = valuation.data?.report;
-  const activeScenario = report?.valuation?.scenarios.baseline;
+  const canonicalValuation = report?.valuation;
+  const valuationResult = canonicalValuation?.result;
   const evidenceAvailable = report?.evidence.status === "available";
-  const methodCount = activeScenario?.approaches.length ?? 0;
+  const methodCount = valuationResult?.approachResults.length ?? 0;
   const resultSummary = useMemo(() => {
     if (!report) return "No valuation has been run for this property profile.";
     if (report.status === "rejected") return "MIAYAAR withheld a value because the local evidence threshold was not met.";
@@ -184,14 +185,17 @@ export default function Home() {
           {!report ? <div className="mi-empty"><Gauge size={30} /><p className="mi-eyebrow">Ready when the property file is</p><h2>A defensible result begins with documented facts.</h2><p>MIAYAAR will show the evidence, applicable approaches, explicit omissions, and decision trail after the valuation is run.</p></div> : <>
             <div className="report-heading"><div><p className="mi-eyebrow">Valuation report · {valuation.data?.requestId}</p><h2>{report.status === "rejected" ? "Evidence threshold not met." : "A value traceable to its evidence."}</h2><p>{resultSummary}</p></div><StatusBadge status={report.status} /></div>
 
-            {activeScenario && <section className="mi-value-card">
-              <div><span>Baseline value</span><strong>{formatAED(activeScenario.value)}</strong><p>Reference range: {formatAED(report.valuation?.scenarios.lower.value)} to {formatAED(report.valuation?.scenarios.upper.value)}</p></div>
+            {valuationResult && <section className="mi-value-card">
+              <div><span>Baseline value</span><strong>{formatAED(valuationResult.value.amount)}</strong><p>Reference range: {formatAED(valuationResult.lowerBound?.amount)} to {formatAED(valuationResult.upperBound?.amount)}</p></div>
               <div className="method-stamp"><i>MIAYAAR</i><b>{report.confidence?.level ?? "not assessed"}</b><span>{report.evidence.status === "available" ? `${report.evidence.comparables.length} comparables` : "No evidence set"}</span><small>{report.methodology.documentId} · v{report.methodology.version}</small></div>
             </section>}
 
-            {activeScenario && <div className="mi-scenarios">{(["lower", "baseline", "upper"] as const).map(scenario => <article key={scenario} className={scenario === "baseline" ? "active" : ""}><span>{titleize(scenario)} scenario</span><b>{formatAED(report.valuation?.scenarios[scenario].value)}</b><small>{report.valuation?.scenarios[scenario].approaches.length ?? 0} applicable approaches</small></article>)}</div>}
+            {valuationResult && <div className="mi-scenarios">{(["lower", "baseline", "upper"] as const).map(scenario => {
+              const amount = scenario === "lower" ? valuationResult.lowerBound?.amount : scenario === "upper" ? valuationResult.upperBound?.amount : valuationResult.value.amount;
+              return <article key={scenario} className={scenario === "baseline" ? "active" : ""}><span>{titleize(scenario)} scenario</span><b>{formatAED(amount)}</b><small>{methodCount} applicable approaches</small></article>;
+            })}</div>}
 
-            {activeScenario && <section className="mi-methods"><div className="section-lead"><span>01</span><h3>Baseline approaches</h3><p>Weights are only normalized when an approach is unavailable; the methodology version remains fixed in the decision record.</p></div><div className="method-list">{activeScenario.approaches.map(approach => <article className="approach-row" key={approach.key}><div className="approach-name"><i /><div><b>{approach.label}</b><small>{approach.metadata.note}</small></div></div><div><b>{formatAED(approach.adjustedValue)}</b><small>{Math.round(approach.normalizedWeight * 100)}% applied weight</small></div><span className="method-bar"><i style={{ width: `${Math.round(approach.normalizedWeight * 100)}%` }} /></span></article>)}</div></section>}
+            {valuationResult && <section className="mi-methods"><div className="section-lead"><span>01</span><h3>Baseline approaches</h3><p>Weights are only normalized when an approach is unavailable; the methodology version remains fixed in the decision record.</p></div><div className="method-list">{valuationResult.approachResults.map(approach => <article className="approach-row" key={approach.approach}><div className="approach-name"><i /><div><b>{approach.approach}</b><small>{String(approach.metadata?.aggregationPolicy ?? "Canonical valuation approach")}</small></div></div><div><b>{formatAED(approach.value.amount)}</b><small>{Math.round(approach.weight * 100)}% applied weight</small></div><span className="method-bar"><i style={{ width: `${Math.round(approach.weight * 100)}%` }} /></span></article>)}</div></section>}
 
             <section id="evidence" className="mi-evidence"><div className="section-lead"><span>02</span><h3>Market evidence</h3><p>Only local, eligible DLD sales that passed the evidence rules are made available to the valuation.</p></div><div>{report.evidence.status === "available" ? <><div className="evidence-meta"><span><Database size={15} />Dubai Land Department</span><span><Workflow size={15} />{report.evidence.search.windowDays}-day search window</span><span><BadgeCheck size={15} />{report.evidence.comparables.length} eligible comparables</span></div><div className="evidence-table"><div className="evidence-head"><span>Transaction reference</span><span>Date</span><span>Area</span><span>Sale price</span><span>Time-adjusted AED/sqm</span></div>{report.evidence.comparables.slice(0, 8).map(item => <div className="evidence-row" key={item.sourceTransactionId}><span><b>{item.sourceTransactionId}</b><small>{titleize(item.district)}</small></span><span>{new Date(item.transactionDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span><span>{item.areaSqm.toLocaleString("en-AE")} sqm</span><span>{formatAED(item.salePriceAed)}</span><span>{formatAED(item.timeAdjustedPricePerSqm)}</span></div>)}</div></> : <div className="evidence-unavailable"><AlertTriangle size={20} /><div><b>Local evidence is insufficient</b><p>Found {report.evidence.availableCount} eligible records; the frozen methodology requires {report.evidence.requiredCount}. No city-wide substitute was used.</p></div></div>}</div></section>
 

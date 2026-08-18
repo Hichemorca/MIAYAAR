@@ -7,7 +7,7 @@
  * both interfaces exactly as documented, with no unsafe casts.
  */
 
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { IEngine, IDataProvider } from '../../../core/contracts';
 import { Result, ResultStatus } from '../../../core/results';

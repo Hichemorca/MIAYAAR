@@ -82,7 +82,7 @@ export const marketTransactions = mysqlTable(
     sourceChecksum: varchar("sourceChecksum", { length: 128 }).notNull(),
     transactionDate: timestamp("transactionDate").notNull(),
     district: varchar("district", { length: 160 }).notNull(),
-    propertyType: mysqlEnum("propertyType", ["apartment", "villa", "townhouse", "office", "retail", "residential_land", "warehouse"])
+    propertyType: mysqlEnum("propertyType", ["apartment", "villa", "townhouse", "office", "retail", "land", "warehouse"])
       .notNull(),
     rawType: varchar("rawType", { length: 160 }).notNull(),
     rawSubType: varchar("rawSubType", { length: 160 }),
