@@ -99,8 +99,64 @@ export const marketTransactions = mysqlTable(
   ]
 );
 
+/** Immutable run-level provenance for each DLD import. Raw supplier data remains outside the runtime database. */
+export const dldImportRuns = mysqlTable(
+  "dldImportRuns",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    sourceLabel: varchar("sourceLabel", { length: 255 }).notNull(),
+    sourceChecksum: varchar("sourceChecksum", { length: 128 }).notNull(),
+    recordsRead: int("recordsRead").notNull(),
+    normalizedRecords: int("normalizedRecords").notNull(),
+    uniqueTransactionIds: int("uniqueTransactionIds").notNull(),
+    duplicateTransactionIds: int("duplicateTransactionIds").notNull(),
+    eligibleRecords: int("eligibleRecords").notNull(),
+    rejectedRecords: int("rejectedRecords").notNull(),
+    skippedRecords: int("skippedRecords").notNull(),
+    status: mysqlEnum("status", ["running", "completed", "failed"]).notNull(),
+    startedAt: timestamp("startedAt").defaultNow().notNull(),
+    completedAt: timestamp("completedAt"),
+  },
+  table => [index("dldImportRuns_source_checksum_idx").on(table.sourceChecksum)]
+);
+
+/** Append-only duplicate, invalid, and policy-rejected source-record observations for a DLD import run. */
+export const dldImportIssues = mysqlTable(
+  "dldImportIssues",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    importRunId: varchar("importRunId", { length: 64 }).notNull(),
+    recordIndex: int("recordIndex").notNull(),
+    issueType: mysqlEnum("issueType", ["duplicate", "rejected", "invalid"]).notNull(),
+    reason: varchar("reason", { length: 255 }).notNull(),
+    sourceTransactionId: varchar("sourceTransactionId", { length: 128 }),
+    recordFingerprint: varchar("recordFingerprint", { length: 128 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("dldImportIssues_run_type_idx").on(table.importRunId, table.issueType)]
+);
+
+/**
+ * Short-lived, HMAC-keyed public valuation rate-limit windows. The raw client
+ * address is never persisted; the same table is shared by all app instances.
+ */
+export const valuationRateLimitWindows = mysqlTable(
+  "valuationRateLimitWindows",
+  {
+    id: varchar("id", { length: 128 }).primaryKey(),
+    windowStart: timestamp("windowStart").notNull(),
+    requestCount: int("requestCount").notNull(),
+    expiresAt: timestamp("expiresAt").notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("valuationRateLimitWindows_expires_idx").on(table.expiresAt)]
+);
+
 export type MethodologyVersion = typeof methodologyVersions.$inferSelect;
 export type InsertMethodologyVersion = typeof methodologyVersions.$inferInsert;
 export type ValuationRequestRecord = typeof valuationRequests.$inferSelect;
 export type ValuationAuditEvent = typeof valuationAuditEvents.$inferSelect;
 export type MarketTransaction = typeof marketTransactions.$inferSelect;
+export type DldImportRun = typeof dldImportRuns.$inferSelect;
+export type DldImportIssue = typeof dldImportIssues.$inferSelect;
+export type ValuationRateLimitWindow = typeof valuationRateLimitWindows.$inferSelect;

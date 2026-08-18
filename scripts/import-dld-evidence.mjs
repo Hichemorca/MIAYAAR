@@ -1,93 +1,49 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import mysql from "mysql2/promise";
+import { cleanDldRecords } from "./lib/dld-evidence-cleaning.mjs";
 
-const inputPath = "/home/ubuntu/webdev-static-assets/miayaar-dld-comparables.json";
-const maxUnitPriceAed = 50_000;
-const maxPriceAed = 50_000_000;
-const classifications = [
-  ["apartment", ["APARTMENT", "UNIT", "FLAT"]],
-  ["villa", ["VILLA"]],
-  ["townhouse", ["TOWNHOUSE"]],
-  ["office", ["OFFICE"]],
-  ["retail", ["RETAIL", "SHOP"]],
-  ["warehouse", ["WAREHOUSE"]],
-  ["land", ["LAND", "PLOT"]],
-];
+const inputPath = process.env.DLD_SOURCE_PATH ?? "/home/ubuntu/webdev-static-assets/miayaar-dld-comparables.json";
+const issueBatchSize = 250;
 
-function text(...parts) {
-  return parts.filter(Boolean).join(" ").trim().toUpperCase();
+function chunksOf(items, size) {
+  const chunks = [];
+  for (let offset = 0; offset < items.length; offset += size) chunks.push(items.slice(offset, offset + size));
+  return chunks;
 }
-
-function classify(rawType, rawSubType) {
-  const primary = text(rawType);
-  const primaryMatch = classifications.find(([, terms]) => terms.some(term => primary.includes(term)));
-  if (primaryMatch) return primaryMatch[0];
-  const fallback = text(rawType, rawSubType);
-  return classifications.find(([, terms]) => terms.some(term => fallback.includes(term)))?.[0];
-}
-
-function normalize(record) {
-  const propertyType = classify(record.t, record.s);
-  const date = new Date(record.d);
-  const areaSqm = Number(record.a);
-  const salePriceAed = Number(record.p);
-  if (!propertyType || Number.isNaN(date.getTime()) || !Number.isFinite(areaSqm) || areaSqm <= 10 || !Number.isFinite(salePriceAed) || salePriceAed <= 0) return undefined;
-
-  const rawText = text(record.t, record.s);
-  let rejectionReason = null;
-  if (propertyType === "land" && /(COMMERCIAL|GENERAL USE)/.test(rawText)) rejectionReason = "commercial_land";
-  if (salePriceAed > maxPriceAed || salePriceAed / areaSqm > maxUnitPriceAed) rejectionReason = "ultra_luxury";
-  return {
-    sourceTransactionId: `dld:${record.id}`,
-    transactionDate: date,
-    district: String(record.x || "").trim().replace(/\s+/g, " ").toUpperCase(),
-    propertyType,
-    rawType: String(record.t || "Unknown"),
-    rawSubType: record.s ? String(record.s) : null,
-    areaSqm,
-    salePriceAed,
-    pricePerSqm: salePriceAed / areaSqm,
-    evidenceStatus: rejectionReason ? "rejected" : "eligible",
-    rejectionReason,
-  };
-}
-
-if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required.");
 
 const dataset = JSON.parse(await readFile(inputPath, "utf8"));
 const checksum = createHash("sha256").update(JSON.stringify(dataset.records)).digest("hex");
-const normalized = dataset.records.map(normalize).filter(Boolean);
-const skippedCount = dataset.records.length - normalized.length;
-const uniqueTransactionIds = new Set(normalized.map(record => record.sourceTransactionId));
+const cleaned = cleanDldRecords(dataset.records);
+const summary = {
+  source: dataset.source ?? "DLD",
+  checksum,
+  ...cleaned.summary,
+};
 
 if (process.env.VERIFY_ONLY === "1") {
-  const eligibleCount = normalized.filter(item => item.evidenceStatus === "eligible").length;
-  console.log(JSON.stringify({
-    source: dataset.source,
-    checksum,
-    recordsRead: dataset.records.length,
-    normalized: normalized.length,
-    uniqueTransactionIds: uniqueTransactionIds.size,
-    duplicateTransactionIds: normalized.length - uniqueTransactionIds.size,
-    eligible: eligibleCount,
-    rejected: normalized.length - eligibleCount,
-    skipped: skippedCount,
-  }, null, 2));
+  console.log(JSON.stringify(summary, null, 2));
   process.exit(0);
 }
 
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required for import mode.");
 const connection = await mysql.createConnection(process.env.DATABASE_URL);
+const runId = `dld_${randomUUID()}`;
 
 try {
+  await connection.query(
+    `INSERT INTO dldImportRuns
+      (id, sourceLabel, sourceChecksum, recordsRead, normalizedRecords, uniqueTransactionIds, duplicateTransactionIds, eligibleRecords, rejectedRecords, skippedRecords, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running')`,
+    [runId, summary.source, checksum, summary.recordsRead, summary.normalized, summary.uniqueTransactionIds, summary.duplicateTransactionIds, summary.eligible, summary.rejected, summary.skipped]
+  );
+
+  await connection.beginTransaction();
   const columns = [
     "sourceTransactionId", "source", "sourceChecksum", "transactionDate", "district", "propertyType", "rawType", "rawSubType",
     "areaSqm", "salePriceAed", "pricePerSqm", "evidenceStatus", "rejectionReason",
   ];
-  const chunks = [];
-  for (let offset = 0; offset < normalized.length; offset += 250) chunks.push(normalized.slice(offset, offset + 250));
-  for (const chunk of chunks) {
+  for (const chunk of chunksOf(cleaned.cleanedRecords, issueBatchSize)) {
     const values = chunk.map(item => [
       item.sourceTransactionId, "DLD", checksum, item.transactionDate, item.district, item.propertyType, item.rawType, item.rawSubType,
       item.areaSqm, item.salePriceAed, item.pricePerSqm, item.evidenceStatus, item.rejectionReason,
@@ -102,9 +58,27 @@ try {
       [values]
     );
   }
-  const eligibleCount = normalized.filter(item => item.evidenceStatus === "eligible").length;
-  console.log(JSON.stringify({ source: dataset.source, checksum, recordsRead: dataset.records.length, imported: normalized.length, eligible: eligibleCount, rejected: normalized.length - eligibleCount, skipped: skippedCount }, null, 2));
+
+  for (const chunk of chunksOf(cleaned.issues, issueBatchSize)) {
+    const values = chunk.map(issue => [
+      runId, issue.recordIndex, issue.issueType, issue.reason, issue.sourceTransactionId, issue.recordFingerprint,
+    ]);
+    await connection.query(
+      "INSERT INTO dldImportIssues (importRunId, recordIndex, issueType, reason, sourceTransactionId, recordFingerprint) VALUES ?",
+      [values]
+    );
+  }
+
+  await connection.query(
+    "UPDATE dldImportRuns SET status = 'completed', completedAt = NOW() WHERE id = ?",
+    [runId]
+  );
+  await connection.commit();
+  console.log(JSON.stringify({ ...summary, runId, importStatus: "completed" }, null, 2));
+} catch (error) {
+  await connection.rollback();
+  await connection.query("UPDATE dldImportRuns SET status = 'failed', completedAt = NOW() WHERE id = ?", [runId]);
+  throw error;
 } finally {
   await connection.end();
-  process.exit(0);
 }

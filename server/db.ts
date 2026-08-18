@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, max } from "drizzle-orm";
+import { and, desc, eq, gte, max, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertMethodologyVersion,
@@ -7,11 +7,13 @@ import {
   methodologyVersions,
   users,
   valuationAuditEvents,
+  valuationRateLimitWindows,
   valuationRequests,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let lastRateLimitPruneAt = 0;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
@@ -168,4 +170,45 @@ export async function listEligibleComparableTransactions(input: {
       gte(marketTransactions.transactionDate, input.from),
     ))
     .orderBy(desc(marketTransactions.transactionDate));
+}
+
+/**
+ * Atomically increments a rate-limit window shared by all server instances.
+ * The caller supplies an HMAC key, never a raw client IP address.
+ */
+export async function consumeValuationRateLimitWindow(input: {
+  key: string;
+  windowStart: Date;
+  expiresAt: Date;
+}): Promise<number | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  try {
+    const now = Date.now();
+    if (now - lastRateLimitPruneAt > 5 * 60_000) {
+      lastRateLimitPruneAt = now;
+      await db.execute(sql`DELETE FROM valuationRateLimitWindows WHERE expiresAt < ${new Date(now - 60 * 60_000)} LIMIT 1000`);
+    }
+
+    await db.execute(sql`
+      INSERT INTO valuationRateLimitWindows (id, windowStart, requestCount, expiresAt, updatedAt)
+      VALUES (${input.key}, ${input.windowStart}, 1, ${input.expiresAt}, NOW())
+      ON DUPLICATE KEY UPDATE
+        requestCount = IF(windowStart = VALUES(windowStart), requestCount + 1, 1),
+        windowStart = VALUES(windowStart),
+        expiresAt = VALUES(expiresAt),
+        updatedAt = NOW()
+    `);
+
+    const record = await db
+      .select({ requestCount: valuationRateLimitWindows.requestCount })
+      .from(valuationRateLimitWindows)
+      .where(eq(valuationRateLimitWindows.id, input.key))
+      .limit(1);
+    return record[0]?.requestCount;
+  } catch (error) {
+    console.error("[Rate limit] Failed to consume shared window:", error);
+    return undefined;
+  }
 }
