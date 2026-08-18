@@ -1,6 +1,5 @@
-import http from "k6/http";
 import { check, sleep } from "k6";
-import http from "k6/http";
+import httpClient from "k6/http";
 
 const baseUrl = __ENV.LOAD_TEST_BASE_URL;
 const confirmation = __ENV.LOAD_TEST_CONFIRMATION;
@@ -12,6 +11,7 @@ if (isolated !== "1" || confirmation !== "I_UNDERSTAND_THIS_TARGET_IS_ISOLATED")
 }
 
 export const options = {
+  summaryTrendStats: ["min", "avg", "med", "max", "p(90)", "p(95)", "p(99)"],
   stages: [
     { duration: "30s", target: 10 },
     { duration: "1m", target: 50 },
@@ -41,10 +41,12 @@ const submission = {
 
 export default function () {
   const payload = JSON.stringify({ 0: { json: submission } });
-  const response = http.post(`${baseUrl}/api/trpc/valuation.run?batch=1`, payload, {
+  const response = httpClient.post(`${baseUrl}/api/trpc/valuation.run?batch=1`, payload, {
     headers: {
       "Content-Type": "application/json",
       "X-MIAYAAR-Load-Test": "isolated-load-test",
+      // RFC 2544 benchmark range; each virtual user remains below the public per-IP limit.
+      "X-Forwarded-For": `198.18.0.${__VU}`,
     },
     tags: { endpoint: "valuation.run" },
   });

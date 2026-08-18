@@ -1,5 +1,6 @@
 import { and, desc, eq, gte, max, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { createPool } from "mysql2/promise";
 import {
   InsertMethodologyVersion,
   InsertUser,
@@ -12,14 +13,28 @@ import {
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
-let _db: ReturnType<typeof drizzle> | null = null;
+function createDatabase(databaseUrl: string) {
+  const pool = createPool({
+    uri: databaseUrl,
+    connectionLimit: 30,
+    maxIdle: 10,
+    idleTimeout: 60_000,
+    enableKeepAlive: true,
+  });
+  return { pool, db: drizzle({ client: pool }) };
+}
+
+let _db: ReturnType<typeof createDatabase>["db"] | null = null;
+let _pool: ReturnType<typeof createDatabase>["pool"] | null = null;
 let lastRateLimitPruneAt = 0;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const connection = createDatabase(process.env.DATABASE_URL);
+      _pool = connection.pool;
+      _db = connection.db;
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
