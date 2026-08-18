@@ -59,6 +59,25 @@ const dataset = JSON.parse(await readFile(inputPath, "utf8"));
 const checksum = createHash("sha256").update(JSON.stringify(dataset.records)).digest("hex");
 const normalized = dataset.records.map(normalize).filter(Boolean);
 const skippedCount = dataset.records.length - normalized.length;
+const uniqueTransactionIds = new Set(normalized.map(record => record.sourceTransactionId));
+
+if (process.env.VERIFY_ONLY === "1") {
+  const eligibleCount = normalized.filter(item => item.evidenceStatus === "eligible").length;
+  console.log(JSON.stringify({
+    source: dataset.source,
+    checksum,
+    recordsRead: dataset.records.length,
+    normalized: normalized.length,
+    uniqueTransactionIds: uniqueTransactionIds.size,
+    duplicateTransactionIds: normalized.length - uniqueTransactionIds.size,
+    eligible: eligibleCount,
+    rejected: normalized.length - eligibleCount,
+    skipped: skippedCount,
+  }, null, 2));
+  process.exit(0);
+}
+
+if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required for import mode.");
 const connection = await mysql.createConnection(process.env.DATABASE_URL);
 
 try {
