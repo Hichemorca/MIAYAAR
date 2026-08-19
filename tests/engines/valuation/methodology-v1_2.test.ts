@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { PropertyType } from '../../../core/types';
 import { minimalProperty } from '../../fixtures/property.fixture';
-import { resolveValuationConfiguration, validateFrozenMethodology } from '../../../engines/valuation/methodology-v1_2';
+import {
+  METHODOLOGY_DOCUMENT_ID as canonicalDocumentId,
+  METHODOLOGY_VERSION as canonicalVersion,
+  frozenMethodologyV12,
+  resolveValuationConfiguration,
+  validateFrozenMethodology,
+} from '../../../engines/valuation/methodology-v1_2';
+import {
+  METHODOLOGY_DOCUMENT_ID as sharedDocumentId,
+  METHODOLOGY_VERSION as sharedVersion,
+} from '../../../shared/valuation/contracts';
 
 describe('canonical frozen methodology v1.2', () => {
   it('contains complete scenario allocations for every supported canonical property type', () => {
@@ -14,5 +24,12 @@ describe('canonical frozen methodology v1.2', () => {
   it('does not create an invented Warehouse methodology allocation', () => {
     const configuration = resolveValuationConfiguration({ ...minimalProperty, classification: { ...minimalProperty.classification, type: PropertyType.WAREHOUSE } });
     expect(configuration).toBeUndefined();
+  });
+
+  it('keeps the interface version declaration aligned with the canonical frozen source', () => {
+    expect(sharedDocumentId).toBe(canonicalDocumentId);
+    expect(sharedVersion).toBe(canonicalVersion);
+    expect(frozenMethodologyV12.documentId).toBe(canonicalDocumentId);
+    expect(frozenMethodologyV12.version).toBe(canonicalVersion);
   });
 });
