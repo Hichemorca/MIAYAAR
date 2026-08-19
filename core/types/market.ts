@@ -46,6 +46,32 @@ export interface TransactionVolume {
 }
 
 /**
+ * The evidence source supplied a verified market-indicator observation.
+ * The value remains separate from its provenance so consumers cannot confuse
+ * an absent metric with zero.
+ */
+export interface AvailableMarketIndicator<T> {
+  readonly status: 'available';
+  readonly value: T;
+  readonly source: DataSource;
+  readonly observedAt: Timestamp;
+}
+
+/**
+ * The evidence source cannot support this indicator. This is a factual state,
+ * not a numeric fallback, and must be preserved through valuation reporting.
+ */
+export interface UnavailableMarketIndicator {
+  readonly status: 'unavailable';
+  readonly reason: 'not_provided_by_source' | 'not_collected' | 'not_applicable' | 'pending_validation';
+  readonly source: DataSource;
+  readonly observedAt: Timestamp;
+}
+
+/** An auditable observed-or-unavailable representation for market metrics. */
+export type MarketIndicator<T> = AvailableMarketIndicator<T> | UnavailableMarketIndicator;
+
+/**
  * PriceIndicators
  * 
  * Represents price-related market indicators.
@@ -61,8 +87,8 @@ export interface PriceIndicators {
   readonly maxPrice: Money;
   /** Price per square meter */
   readonly pricePerSqm: Money;
-  /** Price trend over period (percentage) */
-  readonly priceTrendPercent: number;
+  /** Price trend over period, or an explicit explanation of its non-availability. */
+  readonly priceTrendPercent: MarketIndicator<number>;
 }
 
 /**
@@ -176,12 +202,12 @@ export interface MarketSnapshot {
   readonly timestamp: MarketTimestamp;
   /** Price indicators */
   readonly prices: PriceIndicators;
-  /** Supply indicators */
-  readonly supply: SupplyIndicators;
-  /** Demand indicators */
-  readonly demand: DemandIndicators;
-  /** Liquidity indicators */
-  readonly liquidity: LiquidityIndicators;
+  /** Supply indicators, or an explicit explanation of their non-availability. */
+  readonly supply: MarketIndicator<SupplyIndicators>;
+  /** Demand indicators, or an explicit explanation of their non-availability. */
+  readonly demand: MarketIndicator<DemandIndicators>;
+  /** Liquidity indicators, or an explicit explanation of their non-availability. */
+  readonly liquidity: MarketIndicator<LiquidityIndicators>;
   /** Transaction volume */
   readonly volume: TransactionVolume;
   /** Comparable references */

@@ -7,7 +7,7 @@
  * fields, with no `as` casts.
  */
 
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { Valuation, PropertyType } from '../../../core/types';
 
