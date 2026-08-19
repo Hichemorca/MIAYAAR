@@ -1,4 +1,5 @@
 import type { Config } from "@netlify/functions";
+import { BUILD_STAMP } from "../generated/build-stamp";
 
 export type BuildStampEnvironment = {
   commitRef?: string;
@@ -34,11 +35,7 @@ export default async (request: Request): Promise<Response> => {
     });
   }
 
-  const stamp = createBuildStamp({
-    commitRef: Netlify.env.get("COMMIT_REF"),
-    branch: Netlify.env.get("BRANCH"),
-    context: Netlify.env.get("CONTEXT"),
-  });
+  const stamp = createBuildStamp(BUILD_STAMP);
 
   return new Response(JSON.stringify(stamp), {
     status: 200,

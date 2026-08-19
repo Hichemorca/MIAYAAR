@@ -5,6 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
+    "precheck": "node scripts/write-build-stamp.mjs",
+    "pretest": "node scripts/write-build-stamp.mjs",
+    "prebuild": "node scripts/write-build-stamp.mjs",
     "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
