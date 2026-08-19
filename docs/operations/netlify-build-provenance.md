@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The public `GET /_miayaar/build` endpoint exposes a minimal, non-secret build stamp so an operator can identify the Git source reference of the artifact currently responding in a Netlify deployment.
+The public `GET /_miayaar/build` endpoint exposes a minimal, non-secret build stamp so an operator can identify the Git source reference of the artifact currently responding in a Netlify deployment. A build lifecycle script captures Netlify's `COMMIT_REF`, `BRANCH`, and `CONTEXT` while Netlify is building the artifact; the serverless function serves that generated immutable module and does not rely on runtime environment lookup.
 
 ## Response contract
 

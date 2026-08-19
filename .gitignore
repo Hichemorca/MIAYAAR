@@ -118,3 +118,4 @@ client/public/__manus__/version.json
 .netlify/
 .tmp-supabase-*/
 .tmp-supabase-*.json
+netlify/generated/build-stamp.ts
