@@ -1,97 +1,89 @@
-import { double, index, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { doublePrecision, index, integer, jsonb, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
+ * PostgreSQL/Supabase persistence schema for MIAYAAR. Table and column names
+ * intentionally retain the existing quoted camelCase identifiers so imported
+ * evidence and the application layer remain auditable without renaming.
  */
-export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
-  id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
+export const userRole = pgEnum("user_role", ["user", "admin"]);
+export const methodologyStatus = pgEnum("methodology_status", ["draft", "testing", "review", "approved", "production"]);
+export const valuationRequestStatus = pgEnum("valuation_request_status", ["received", "completed", "partial", "rejected", "failed"]);
+export const valuationAuditStage = pgEnum("valuation_audit_stage", ["validation", "data", "gis", "rules", "valuation", "confidence", "reporting"]);
+export const propertyType = pgEnum("property_type", ["apartment", "villa", "townhouse", "office", "retail", "land", "warehouse"]);
+export const evidenceStatus = pgEnum("evidence_status", ["eligible", "rejected"]);
+export const dldImportStatus = pgEnum("dld_import_status", ["running", "completed", "failed"]);
+export const dldImportIssueType = pgEnum("dld_import_issue_type", ["duplicate", "rejected", "invalid"]);
+
+/** Core user table backing the optional OAuth flow. */
+export const users = pgTable("users", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  role: userRole("role").default("user").notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  lastSignedIn: timestamp("lastSignedIn", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-/**
- * Immutable methodology releases. The running valuation must reference an
- * approved release so every decision can be reproduced later.
- */
-export const methodologyVersions = mysqlTable("methodologyVersions", {
-  id: int("id").autoincrement().primaryKey(),
+/** Immutable methodology releases referenced by reproducible valuation decisions. */
+export const methodologyVersions = pgTable("methodologyVersions", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   version: varchar("version", { length: 32 }).notNull().unique(),
-  status: mysqlEnum("status", ["draft", "testing", "review", "approved", "production"])
-    .notNull()
-    .default("draft"),
+  status: methodologyStatus("status").notNull().default("draft"),
   documentId: varchar("documentId", { length: 64 }).notNull(),
   checksum: varchar("checksum", { length: 128 }).notNull(),
-  configuration: json("configuration").notNull(),
+  configuration: jsonb("configuration").notNull(),
   changeSummary: text("changeSummary").notNull(),
   approvedBy: varchar("approvedBy", { length: 64 }),
-  approvedAt: timestamp("approvedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  approvedAt: timestamp("approvedAt", { withTimezone: true }),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 /** A valuation request persists its exact input and chosen methodology version. */
-export const valuationRequests = mysqlTable("valuationRequests", {
+export const valuationRequests = pgTable("valuationRequests", {
   id: varchar("id", { length: 64 }).primaryKey(),
-  userId: int("userId"),
+  userId: integer("userId"),
   methodologyVersion: varchar("methodologyVersion", { length: 32 }).notNull(),
-  propertyInput: json("propertyInput").notNull(),
-  status: mysqlEnum("status", ["received", "completed", "partial", "rejected", "failed"])
-    .notNull()
-    .default("received"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  completedAt: timestamp("completedAt"),
+  propertyInput: jsonb("propertyInput").notNull(),
+  status: valuationRequestStatus("status").notNull().default("received"),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  completedAt: timestamp("completedAt", { withTimezone: true }),
 });
 
 /** Append-only evidence of each canonical orchestration stage. */
-export const valuationAuditEvents = mysqlTable("valuationAuditEvents", {
-  id: int("id").autoincrement().primaryKey(),
+export const valuationAuditEvents = pgTable("valuationAuditEvents", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   valuationRequestId: varchar("valuationRequestId", { length: 64 }).notNull(),
-  stage: mysqlEnum("stage", ["validation", "data", "gis", "rules", "valuation", "confidence", "reporting"])
-    .notNull(),
+  stage: valuationAuditStage("stage").notNull(),
   eventType: varchar("eventType", { length: 64 }).notNull(),
-  payload: json("payload").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  payload: jsonb("payload").notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
-/**
- * Validated market evidence only. Raw supplier files stay outside the runtime
- * database; this table stores the normalized, eligible DLD transactions used
- * by comparable search and keeps the source fingerprint for reproducibility.
- */
-export const marketTransactions = mysqlTable(
+/** Validated DLD market evidence used by comparable search. */
+export const marketTransactions = pgTable(
   "marketTransactions",
   {
-    id: int("id").autoincrement().primaryKey(),
+    id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
     sourceTransactionId: varchar("sourceTransactionId", { length: 128 }).notNull().unique(),
     source: varchar("source", { length: 64 }).notNull().default("DLD"),
     sourceChecksum: varchar("sourceChecksum", { length: 128 }).notNull(),
-    transactionDate: timestamp("transactionDate").notNull(),
+    transactionDate: timestamp("transactionDate", { withTimezone: true }).notNull(),
     district: varchar("district", { length: 160 }).notNull(),
-    propertyType: mysqlEnum("propertyType", ["apartment", "villa", "townhouse", "office", "retail", "land", "warehouse"])
-      .notNull(),
+    propertyType: propertyType("propertyType").notNull(),
     rawType: varchar("rawType", { length: 160 }).notNull(),
     rawSubType: varchar("rawSubType", { length: 160 }),
-    areaSqm: double("areaSqm").notNull(),
-    salePriceAed: double("salePriceAed").notNull(),
-    pricePerSqm: double("pricePerSqm").notNull(),
-    evidenceStatus: mysqlEnum("evidenceStatus", ["eligible", "rejected"]).notNull().default("eligible"),
+    areaSqm: doublePrecision("areaSqm").notNull(),
+    salePriceAed: doublePrecision("salePriceAed").notNull(),
+    pricePerSqm: doublePrecision("pricePerSqm").notNull(),
+    evidenceStatus: evidenceStatus("evidenceStatus").notNull().default("eligible"),
     rejectionReason: varchar("rejectionReason", { length: 255 }),
-    ingestedAt: timestamp("ingestedAt").defaultNow().notNull(),
+    ingestedAt: timestamp("ingestedAt", { withTimezone: true }).defaultNow().notNull(),
   },
   table => [
     index("marketTransactions_district_type_date_idx").on(table.district, table.propertyType, table.transactionDate),
@@ -99,55 +91,52 @@ export const marketTransactions = mysqlTable(
   ]
 );
 
-/** Immutable run-level provenance for each DLD import. Raw supplier data remains outside the runtime database. */
-export const dldImportRuns = mysqlTable(
+/** Immutable run-level provenance for a DLD import. */
+export const dldImportRuns = pgTable(
   "dldImportRuns",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
     sourceLabel: varchar("sourceLabel", { length: 255 }).notNull(),
     sourceChecksum: varchar("sourceChecksum", { length: 128 }).notNull(),
-    recordsRead: int("recordsRead").notNull(),
-    normalizedRecords: int("normalizedRecords").notNull(),
-    uniqueTransactionIds: int("uniqueTransactionIds").notNull(),
-    duplicateTransactionIds: int("duplicateTransactionIds").notNull(),
-    eligibleRecords: int("eligibleRecords").notNull(),
-    rejectedRecords: int("rejectedRecords").notNull(),
-    skippedRecords: int("skippedRecords").notNull(),
-    status: mysqlEnum("status", ["running", "completed", "failed"]).notNull(),
-    startedAt: timestamp("startedAt").defaultNow().notNull(),
-    completedAt: timestamp("completedAt"),
+    recordsRead: integer("recordsRead").notNull(),
+    normalizedRecords: integer("normalizedRecords").notNull(),
+    uniqueTransactionIds: integer("uniqueTransactionIds").notNull(),
+    duplicateTransactionIds: integer("duplicateTransactionIds").notNull(),
+    eligibleRecords: integer("eligibleRecords").notNull(),
+    rejectedRecords: integer("rejectedRecords").notNull(),
+    skippedRecords: integer("skippedRecords").notNull(),
+    status: dldImportStatus("status").notNull(),
+    startedAt: timestamp("startedAt", { withTimezone: true }).defaultNow().notNull(),
+    completedAt: timestamp("completedAt", { withTimezone: true }),
   },
   table => [index("dldImportRuns_source_checksum_idx").on(table.sourceChecksum)]
 );
 
-/** Append-only duplicate, invalid, and policy-rejected source-record observations for a DLD import run. */
-export const dldImportIssues = mysqlTable(
+/** Append-only duplicate, invalid, and policy-rejected source observations. */
+export const dldImportIssues = pgTable(
   "dldImportIssues",
   {
-    id: int("id").autoincrement().primaryKey(),
+    id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
     importRunId: varchar("importRunId", { length: 64 }).notNull(),
-    recordIndex: int("recordIndex").notNull(),
-    issueType: mysqlEnum("issueType", ["duplicate", "rejected", "invalid"]).notNull(),
+    recordIndex: integer("recordIndex").notNull(),
+    issueType: dldImportIssueType("issueType").notNull(),
     reason: varchar("reason", { length: 255 }).notNull(),
     sourceTransactionId: varchar("sourceTransactionId", { length: 128 }),
     recordFingerprint: varchar("recordFingerprint", { length: 128 }).notNull(),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   },
   table => [index("dldImportIssues_run_type_idx").on(table.importRunId, table.issueType)]
 );
 
-/**
- * Short-lived, HMAC-keyed public valuation rate-limit windows. The raw client
- * address is never persisted; the same table is shared by all app instances.
- */
-export const valuationRateLimitWindows = mysqlTable(
+/** HMAC-keyed, shared rate-limit windows; raw client IP addresses are never persisted. */
+export const valuationRateLimitWindows = pgTable(
   "valuationRateLimitWindows",
   {
     id: varchar("id", { length: 128 }).primaryKey(),
-    windowStart: timestamp("windowStart").notNull(),
-    requestCount: int("requestCount").notNull(),
-    expiresAt: timestamp("expiresAt").notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+    windowStart: timestamp("windowStart", { withTimezone: true }).notNull(),
+    requestCount: integer("requestCount").notNull(),
+    expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   },
   table => [index("valuationRateLimitWindows_expires_idx").on(table.expiresAt)]
 );

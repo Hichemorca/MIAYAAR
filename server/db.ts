@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, max, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { createPool } from "mysql2/promise";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import {
   InsertMethodologyVersion,
   InsertUser,
@@ -14,12 +14,14 @@ import {
 import { ENV } from './_core/env';
 
 function createDatabase(databaseUrl: string) {
-  const pool = createPool({
-    uri: databaseUrl,
-    connectionLimit: 30,
-    maxIdle: 10,
-    idleTimeout: 60_000,
-    enableKeepAlive: true,
+  const isSupabaseDatabase = /(?:^|[./])supabase\.(?:co|com)(?::|[/]|$)/i.test(databaseUrl);
+  const pool = new Pool({
+    connectionString: databaseUrl,
+    max: 20,
+    idleTimeoutMillis: 60_000,
+    // Direct Supabase hosts use `*.supabase.co`; Transaction Pooler hosts use
+    // `*.pooler.supabase.com`. Both require TLS from a Netlify function.
+    ssl: isSupabaseDatabase ? { rejectUnauthorized: false } : undefined,
   });
   return { pool, db: drizzle({ client: pool }) };
 }
@@ -93,7 +95,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -124,7 +127,8 @@ export async function getMethodologyVersion(version: string) {
 export async function upsertMethodologyVersion(record: InsertMethodologyVersion): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Methodology storage is unavailable.");
-  await db.insert(methodologyVersions).values(record).onDuplicateKeyUpdate({
+  await db.insert(methodologyVersions).values(record).onConflictDoUpdate({
+    target: methodologyVersions.version,
     set: {
       checksum: record.checksum,
       configuration: record.configuration,
@@ -203,25 +207,34 @@ export async function consumeValuationRateLimitWindow(input: {
     const now = Date.now();
     if (now - lastRateLimitPruneAt > 5 * 60_000) {
       lastRateLimitPruneAt = now;
-      await db.execute(sql`DELETE FROM valuationRateLimitWindows WHERE expiresAt < ${new Date(now - 60 * 60_000)} LIMIT 1000`);
+      await db.execute(sql`
+        DELETE FROM "valuationRateLimitWindows"
+        WHERE id IN (
+          SELECT id
+          FROM "valuationRateLimitWindows"
+          WHERE "expiresAt" < ${new Date(now - 60 * 60_000)}
+          ORDER BY "expiresAt"
+          LIMIT 1000
+        )
+      `);
     }
 
-    await db.execute(sql`
-      INSERT INTO valuationRateLimitWindows (id, windowStart, requestCount, expiresAt, updatedAt)
+    const incrementResult = await db.execute(sql`
+      INSERT INTO "valuationRateLimitWindows" (id, "windowStart", "requestCount", "expiresAt", "updatedAt")
       VALUES (${input.key}, ${input.windowStart}, 1, ${input.expiresAt}, NOW())
-      ON DUPLICATE KEY UPDATE
-        requestCount = IF(windowStart = VALUES(windowStart), requestCount + 1, 1),
-        windowStart = VALUES(windowStart),
-        expiresAt = VALUES(expiresAt),
-        updatedAt = NOW()
+      ON CONFLICT (id) DO UPDATE SET
+        "requestCount" = CASE
+          WHEN "valuationRateLimitWindows"."windowStart" = EXCLUDED."windowStart"
+            THEN "valuationRateLimitWindows"."requestCount" + 1
+          ELSE 1
+        END,
+        "windowStart" = EXCLUDED."windowStart",
+        "expiresAt" = EXCLUDED."expiresAt",
+        "updatedAt" = NOW()
+      RETURNING "requestCount"
     `);
-
-    const record = await db
-      .select({ requestCount: valuationRateLimitWindows.requestCount })
-      .from(valuationRateLimitWindows)
-      .where(eq(valuationRateLimitWindows.id, input.key))
-      .limit(1);
-    return record[0]?.requestCount;
+    const record = incrementResult.rows[0] as { requestCount?: number } | undefined;
+    return record?.requestCount;
   } catch (error) {
     console.error("[Rate limit] Failed to consume shared window:", error);
     return undefined;

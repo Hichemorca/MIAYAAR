@@ -4,7 +4,7 @@ import { sdk } from "./sdk";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
-  res: CreateExpressContextOptions["res"];
+  res: CreateExpressContextOptions["res"] | null;
   user: User | null;
 };
 
