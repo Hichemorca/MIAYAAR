@@ -1,0 +1,67 @@
+name: MIAYAAR Failure Alerts
+
+on:
+  workflow_run:
+    workflows: ["MIAYAAR CI"]
+    types: [completed]
+  check_run:
+    types: [completed]
+  status:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  open-github-alert:
+    name: Open a GitHub failure alert
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure') ||
+      (github.event_name == 'check_run' && github.event.check_run.conclusion == 'failure' && github.event.check_run.app.slug == 'netlify') ||
+      (github.event_name == 'status' && (github.event.state == 'failure' || github.event.state == 'error') && startsWith(github.event.context, 'deploy/netlify'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Create a deduplicated failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const eventName = context.eventName;
+            const payload = context.payload;
+            const source = eventName === "workflow_run"
+              ? payload.workflow_run
+              : eventName === "check_run"
+                ? payload.check_run
+                : payload;
+            const sha = source.head_sha ?? payload.sha ?? "unknown";
+            const detailsUrl = source.html_url ?? source.details_url ?? payload.target_url ?? "";
+            const summary = source.name ?? payload.context ?? "MIAYAAR deployment status";
+            const dedupeKey = `miayaar-failure:${eventName}:${sha}:${summary}`;
+            const query = `repo:${owner}/${repo} is:issue is:open label:ci-cd-alert "${dedupeKey}"`;
+            const existing = await github.rest.search.issuesAndPullRequests({ q: query });
+
+            if (existing.data.total_count > 0) {
+              core.info(`An open alert already exists for ${dedupeKey}.`);
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `[CI/CD failure] ${summary} (${sha.slice(0, 7)})`,
+              labels: ["ci-cd-alert"],
+              body: [
+                "A GitHub-managed MIAYAAR CI/CD failure alert was generated.",
+                "",
+                `- Source: \`${eventName}\``,
+                `- Check or deployment: **${summary}**`,
+                `- Commit: \`${sha}\``,
+                detailsUrl ? `- Details: ${detailsUrl}` : "- Details: no external URL was supplied by the event.",
+                "",
+                `<!-- ${dedupeKey} -->`,
+                "",
+                "Resolve the underlying failure, confirm the relevant check is green, then close this issue.",
+              ].join("\n"),
+            });
