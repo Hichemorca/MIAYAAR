@@ -20,6 +20,21 @@ describe("release governance automation", () => {
     expect(workflow).toContain("git diff --check");
   });
 
+  test("GitHub-native alerts create deduplicated issues for CI and Netlify failures", () => {
+    const workflow = readRepositoryFile(".github", "workflows", "failure-alerts.yml");
+    const operations = readRepositoryFile("docs", "operations", "github-ci-cd-notifications.md");
+
+    expect(workflow).toContain("workflow_run:");
+    expect(workflow).toContain('workflows: ["MIAYAAR CI"]');
+    expect(workflow).toContain("check_run:");
+    expect(workflow).toContain("status:");
+    expect(workflow).toContain("actions/github-script@v7");
+    expect(workflow).toContain("ci-cd-alert");
+    expect(workflow).toContain("dedupeKey");
+    expect(operations).toContain("Repository watchers");
+    expect(operations).toContain("cannot force an individual watcher");
+  });
+
   test("the methodology ADR template preserves canonical-source and evidence-led release gates", () => {
     const template = readRepositoryFile("docs", "ADR", "ADR-TEMPLATE-METHODOLOGY-RELEASE.md");
 
