@@ -79,6 +79,8 @@ Document the rejected alternatives.
 | ADR-007 | Standardized Result Object Contract | Accepted | 2026-08-08 |
 | ADR-008 | Core Contracts Module | Accepted | 2026-08-08 |
 | ADR-009 | Valuation Engine | Accepted | 2026-08-08 |
+| ADR-010 | Explicit Availability for Market Snapshot Indicators | Accepted | 2026-08-18 |
+| ADR-011 | Canonical Frozen Valuation Methodology v1.2 | Accepted | 2026-08-19 |
 
 ---
 
