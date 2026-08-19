@@ -28,10 +28,26 @@ The response is `available` only when the eligibility rule is satisfied. Otherwi
 
 Each response records `source`, `policyVersion`, `asOf`, the request filters, and record-level `sourceTransactionId`, `sourceChecksum`, `transactionDate`, `ingestedAt`, `evidenceStatus`, and stored `rejectionReason` where applicable. This preserves the provenance of included and excluded evidence without deriving an unrecorded cause.
 
+## Approved report API surface
+
+The approved server-side report surface is the public tRPC query
+`evidenceIntegrity.report`. It accepts only one `district`, one
+`propertyType`, and one explicit `asOf` date, then returns the existing
+Evidence Integrity v1.0 result unchanged. The procedure has no `areaSqm`,
+price, candidate-property, confidence, or valuation input because those
+dimensions are not part of this policy or its evidence contract.
+
+The query may expose only the observations, availability state, summary, and
+record-level provenance specified above. It uses the existing read-only DLD
+provider and must not persist a report, add a fallback scope, or derive a new
+observation. Any future API input, report field, access-control policy, or
+endpoint-specific rate-limit policy requires a separately approved policy and
+contract change.
+
 ## Non-interference
 
-This policy must not import, invoke, mutate, or alter the Valuation Engine, methodology v1.2, methodology weights or coefficients, actual sale prices, Comparable Selection, Confidence, valuation eligibility, valuation output, source transaction rows, API exposure, reports, dashboard, or user interface.
+This policy and its report API must not import, invoke, mutate, or alter the Valuation Engine, methodology v1.2, methodology weights or coefficients, actual sale prices, Comparable Selection, Confidence, valuation eligibility, valuation output, source transaction rows, dashboard, or user interface. The report result must not be consumed as an input to valuation or confidence processing.
 
 ## Deferred
 
-Price outlier classifications, scale-error claims, special-transaction classifications, candidate-price comparisons, confidence scores, new data sources, enrichment, API endpoints, diagnostics reports, and UI are outside v1.0. They require a separate approved policy and contract.
+Price outlier classifications, scale-error claims, special-transaction classifications, candidate-price comparisons, confidence scores, new data sources, enrichment, any API or report surface beyond the approved facts-only query, and UI are outside v1.0. They require a separate approved policy and contract.
