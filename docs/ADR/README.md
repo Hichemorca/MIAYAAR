@@ -16,6 +16,8 @@ Each ADR title describes the decision, not the problem.
 
 Every architectural decision must be documented **before** implementation.
 
+Every methodology release or amendment must use the [methodology-release ADR template](./ADR-TEMPLATE-METHODOLOGY-RELEASE.md) before an implementation changes a methodology identifier, version, property taxonomy, method applicability, weight, factor, evidence threshold, scenario, output contract, or canonical engine source.
+
 Examples of decisions that require an ADR:
 
 - Choosing between architectural alternatives.
@@ -57,6 +59,10 @@ Future implications.
 
 Alternatives Considered
 Document the rejected alternatives.
+
+## Methodology Release Requirements
+
+The methodology-release template supplements the standard ADR format. It records the canonical implementation source, version-alignment test, immutable configuration reference, evidence and calculation impact, contract/API and audit impact, validation record, owner approval, and release references. A frozen release is never overwritten: a material change receives a new version and its own ADR.
 
 ## Why ADRs Are Mandatory
 
