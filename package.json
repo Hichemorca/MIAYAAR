@@ -16,7 +16,9 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "dld:verify": "VERIFY_ONLY=1 node scripts/import-dld-evidence.mjs",
     "dld:clean": "node scripts/clean-dld-data.mjs",
-    "test:load": "k6 run tests/performance/load-test.js"
+    "test:load": "k6 run tests/performance/load-test.js",
+    "backtest:dld": "tsx scripts/run-dld-observable-backtest.mts",
+    "sensitivity:v12": "tsx scripts/run-v12-factor-sensitivity.mts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
