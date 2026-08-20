@@ -17,4 +17,29 @@ describe("DLD evidence normalization", () => {
     expect(classifyPropertyType("Other", "Unknown")).toBeUndefined();
     expect(normalizeDistrict("Jumeirah   Village Circle")).toBe("JUMEIRAH VILLAGE CIRCLE");
   });
+
+  it("does not propagate unsupported secondary attributes from a raw DLD record", () => {
+    const normalized = normalizeDldEvidence({
+      id: "dld-4",
+      d: "2026-05-01",
+      t: "Apartment",
+      s: "Unit",
+      x: "Dubai Marina",
+      a: 100,
+      p: 1_500_000,
+      r: null,
+      project: "Unverified project",
+      finish: "Unverified finish",
+      view: "Unverified view",
+      floor: 42,
+      rent: 150_000,
+    } as never);
+
+    expect(normalized).toBeDefined();
+    expect(normalized).not.toHaveProperty("project");
+    expect(normalized).not.toHaveProperty("finish");
+    expect(normalized).not.toHaveProperty("view");
+    expect(normalized).not.toHaveProperty("floor");
+    expect(normalized).not.toHaveProperty("rent");
+  });
 });

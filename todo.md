@@ -58,3 +58,6 @@
 - [x] Validate the acceptance record and open a documentation-only pull request to place the Core Types Freeze decision on main.
 - [x] Prepare a governed automated testing and CI/CD verification plan for post-merge main stability without changing the current pipeline or runtime behavior.
 - [x] Implement Option A: a signed Netlify Deploy succeeded attestation receiver with read-only production identity comparison, operational logging, and bounded tests; do not change valuation, data, contracts, methodology, UI, or rollback behavior.
+- [x] Verify the merged PR #46 production deployment and confirm the first Netlify deploy-attestation MATCH operational record without changing runtime behavior or configuration.
+- [x] Review the official roadmap state after Core Types Freeze closure and post-merge stability verification; identify the next owner-gated phase without starting implementation.
+- [x] Review Phase 2 Data Pipeline & Classification: inventory the DLD evidence contract, cleaning and classification flow, and no-inference safeguards; document governed gaps without modifying product logic or data sources.
