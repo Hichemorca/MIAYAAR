@@ -26,7 +26,7 @@ It must not infer additional architectural changes.
 |----|-------|-----|----------|--------|
 | IMP-001 | Platform Metadata | ADR-002 | Critical | Implemented |
 | IMP-002 | Building Condition | ADR-006 | Critical | Pending |
-| IMP-003 | Business Vocabulary | ADR-005 | Critical | Pending |
+| IMP-003 | Business Vocabulary | ADR-005 | Critical | Implemented with no additional approved conversions |
 | IMP-004 | Immutable Contracts | ADR-004 | Critical | Pending |
 | IMP-005 | Documentation Cleanup | - | Low | Pending |
 | IMP-006 | Primitive Cleanup | - | Low | Pending |
@@ -96,13 +96,15 @@ Introduce `BuildingCondition` enum in `core/types/enums.ts`.
 
 **Priority:** Critical
 
-**Status:** Pending
+**Status:** Implemented with no additional approved conversions
 
 **Description:**
 
 Convert all Closed Business Vocabulary into enums.
 
 Human input remains string.
+
+The owner-approved implementation inventory confirms that all currently approved closed value sets are already centralised in `core/types/enums.ts`. Fields without a policy-approved finite value set remain in their present representations and are not implementation failures.
 
 **Scope:**
 
@@ -115,6 +117,7 @@ Human input remains string.
 - All closed vocabulary terms are enums.
 - Human input fields remain string.
 - No mixed types.
+- No enum, value, mapping, synonym, `UNKNOWN`, `OTHER`, `UNSPECIFIED`, or fallback is invented for a field whose policy does not define a finite closed value set.
 
 ---
 
