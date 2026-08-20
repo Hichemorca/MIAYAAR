@@ -30,3 +30,5 @@
 - [x] Request owner-supplied information for one candidate non-sales evidence source under phase B; do not conduct external research, contact the source, access systems, or collect data.
 - [x] Create one governance-only candidate source record from owner-supplied information, validate its scope, and open a documentation-only pull request with no source access or data collection.
 - [x] Reconcile the owner-supplied four-source candidate package with the approved one-record limit for phase B before registering any candidate source record.
+- [x] Define the owner decision, documents, and factual inputs required to approve a bounded Phase C provenance-and-rights review for SRC-001 without accessing, collecting, or using source data.
+- [x] Conduct the owner-authorized Phase C passive provenance-and-rights review for SRC-001 using only the three supplied public URLs; record visible facts and unresolved rights without login, acceptance, download, API use, data collection, or valuation use.
