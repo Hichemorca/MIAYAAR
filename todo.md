@@ -19,4 +19,4 @@
 - [x] Study M-03 and M-04 partial-approach policy eligibility by property type and scenario without changing runtime behavior, methodology v1.2, weights, coefficients, contracts, API, or valuation outputs.
 - [x] Validate the M-03/M-04 policy study against governing documents and open a documentation-only pull request with unresolved decisions preserved explicitly.
 - [x] Design a read-only evidence-acquisition and validation protocol for M-03/M-04 with provenance, linkage, as-of, isolation, and audit requirements; do not approve any partial-result policy or operational change.
-- [ ] Validate the M-03/M-04 evidence protocol against the governing sources and open a documentation-only pull request preserving all unresolved policy decisions.
+- [x] Validate the M-03/M-04 evidence protocol against the governing sources and open a documentation-only pull request preserving all unresolved policy decisions.
