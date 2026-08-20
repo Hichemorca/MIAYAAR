@@ -13,3 +13,5 @@
 - [x] Review and classify provisional CALC-008 through CALC-016 in the decision record without code changes.
 - [x] Correct the CALC-015 disclosure by enumerating implemented provisional policy identifiers without changing valuation behavior.
 - [x] Run a policy gate for CALC-013 active-approach weight normalization without changing code or valuation outputs.
+- [x] Draft a proposed ADR for CALC-013 active-approach weight normalization without changing the frozen methodology or runtime behavior.
+- [x] Add the CALC-013 ADR proposal to the open documentation PR #25 after reconciling its policy-gate scope.

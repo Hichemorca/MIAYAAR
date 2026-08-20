@@ -74,19 +74,20 @@ The methodology-release template supplements the standard ADR format. It records
 
 ## ADR Index
 
-| ADR | Title | Status | Date |
-|-----|-------|--------|------|
-| ADR-001 | Core Types as Canonical Immutable Domain Contracts | Accepted | 2026-08-07 |
-| ADR-002 | Platform Audit Metadata | Accepted | 2026-08-07 |
-| ADR-003 | Entity Contracts vs Value Object Contracts | Accepted | 2026-08-07 |
-| ADR-004 | Canonical Contracts are Immutable by Design | Accepted | 2026-08-07 |
-| ADR-005 | Business Vocabulary Rule | Accepted | 2026-08-07 |
-| ADR-006 | Separation of Property Condition and Building Condition | Accepted | 2026-08-07 |
-| ADR-007 | Standardized Result Object Contract | Accepted | 2026-08-08 |
-| ADR-008 | Core Contracts Module | Accepted | 2026-08-08 |
-| ADR-009 | Valuation Engine | Accepted | 2026-08-08 |
-| ADR-010 | Explicit Availability for Market Snapshot Indicators | Accepted | 2026-08-18 |
-| ADR-011 | Canonical Frozen Valuation Methodology v1.2 | Accepted | 2026-08-19 |
+| ADR     | Title                                                        | Status   | Date       |
+| ------- | ------------------------------------------------------------ | -------- | ---------- |
+| ADR-001 | Core Types as Canonical Immutable Domain Contracts           | Accepted | 2026-08-07 |
+| ADR-002 | Platform Audit Metadata                                      | Accepted | 2026-08-07 |
+| ADR-003 | Entity Contracts vs Value Object Contracts                   | Accepted | 2026-08-07 |
+| ADR-004 | Canonical Contracts are Immutable by Design                  | Accepted | 2026-08-07 |
+| ADR-005 | Business Vocabulary Rule                                     | Accepted | 2026-08-07 |
+| ADR-006 | Separation of Property Condition and Building Condition      | Accepted | 2026-08-07 |
+| ADR-007 | Standardized Result Object Contract                          | Accepted | 2026-08-08 |
+| ADR-008 | Core Contracts Module                                        | Accepted | 2026-08-08 |
+| ADR-009 | Valuation Engine                                             | Accepted | 2026-08-08 |
+| ADR-010 | Explicit Availability for Market Snapshot Indicators         | Accepted | 2026-08-18 |
+| ADR-011 | Canonical Frozen Valuation Methodology v1.2                  | Accepted | 2026-08-19 |
+| ADR-012 | Proposed Direction for Missing-Approach Weight Normalization | Proposed | 2026-08-20 |
 
 ---
 
