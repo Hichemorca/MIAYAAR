@@ -56,3 +56,5 @@
 - [x] Compare the merged main branch against the official phase-status map and report completed, blocked, and decision-gated roadmap stages without starting new work.
 - [x] Prepare an architecture acceptance review that verifies IMP-001 and IMP-003 closure evidence and records the owner-approved Core Types Freeze decision without technical changes.
 - [x] Validate the acceptance record and open a documentation-only pull request to place the Core Types Freeze decision on main.
+- [x] Prepare a governed automated testing and CI/CD verification plan for post-merge main stability without changing the current pipeline or runtime behavior.
+- [x] Implement Option A: a signed Netlify Deploy succeeded attestation receiver with read-only production identity comparison, operational logging, and bounded tests; do not change valuation, data, contracts, methodology, UI, or rollback behavior.
