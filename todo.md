@@ -16,3 +16,5 @@
 - [x] Draft a proposed ADR for CALC-013 active-approach weight normalization without changing the frozen methodology or runtime behavior.
 - [x] Add the CALC-013 ADR proposal to the open documentation PR #25 after reconciling its policy-gate scope.
 - [x] Draft a missing-approach eligibility matrix policy for CALC-013 without changing code, weights, or valuation outputs.
+- [x] Study M-03 and M-04 partial-approach policy eligibility by property type and scenario without changing runtime behavior, methodology v1.2, weights, coefficients, contracts, API, or valuation outputs.
+- [ ] Validate the M-03/M-04 policy study against governing documents and open a documentation-only pull request with unresolved decisions preserved explicitly.
