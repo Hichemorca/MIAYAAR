@@ -6,6 +6,8 @@
 
 > This map distinguishes implemented technical work from approval and merge state. The Market Intelligence implementation is complete on `feature/market-intelligence-v1` and awaits review and merge through PR #14; it is not claimed as protected-`main` functionality until that merge occurs.
 
+> **Core Types supersession notice — 2026-08-20:** This map is a historical 2026-08-19 phase snapshot. Its Core Types-dependent status is superseded by `CORE-TYPES-FREEZE-ARCHITECTURE-ACCEPTANCE-2026-08-20.md`: IMP-001 through IMP-004 are implemented and **Core Types Freeze is closed — architecture accepted**. This notice does not revise the remaining phase entries beyond their documented historical baseline.
+
 | Official phase | Governed status | File-level evidence | Remaining boundary or decision |
 |---|---|---|---|
 | 1. Architecture & Contracts | **Implemented** | `core/types/`, `core/results/`, `core/contracts/`, `engines/valuation/`, and `docs/ADR/ADR-011-canonical-frozen-valuation-methodology-v1-2.md` | A new architecture decision is required before changing frozen canonical contracts or methodology. |

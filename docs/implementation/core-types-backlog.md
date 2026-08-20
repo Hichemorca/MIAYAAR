@@ -1,8 +1,8 @@
 ﻿# Core Types Implementation Backlog
 
-**Version:** 1.0
+**Version:** 1.2
 
-**Status:** Pending
+**Status:** Frozen — architecture accepted on 2026-08-20
 
 **Target Freeze:** Core Types Module
 
@@ -25,9 +25,9 @@ It must not infer additional architectural changes.
 | ID | Title | ADR | Priority | Status |
 |----|-------|-----|----------|--------|
 | IMP-001 | Platform Metadata | ADR-002 | Critical | Implemented |
-| IMP-002 | Building Condition | ADR-006 | Critical | Pending |
+| IMP-002 | Building Condition | ADR-006 | Critical | Implemented |
 | IMP-003 | Business Vocabulary | ADR-005 | Critical | Implemented with no additional approved conversions |
-| IMP-004 | Immutable Contracts | ADR-004 | Critical | Pending |
+| IMP-004 | Immutable Contracts | ADR-004 | Critical | Implemented |
 | IMP-005 | Documentation Cleanup | - | Low | Pending |
 | IMP-006 | Primitive Cleanup | - | Low | Pending |
 
@@ -68,7 +68,7 @@ Replace local audit fields in `Valuation` and `Confidence` with the shared `Meta
 
 **Priority:** Critical
 
-**Status:** Pending
+**Status:** Implemented
 
 **Description:**
 
@@ -127,7 +127,7 @@ The owner-approved implementation inventory confirms that all currently approved
 
 **Priority:** Critical
 
-**Status:** Pending
+**Status:** Implemented
 
 **Description:**
 
@@ -212,6 +212,10 @@ Core Types Freeze Review may begin only when:
 - ✓ ADRs respected
 - ✓ Architecture Board approves
 
+## Freeze Acceptance
+
+All Critical items are complete and the project owner has approved the architecture acceptance review. The Core Types Freeze is closed as of 2026-08-20. The acceptance evidence and preserved boundaries are recorded in `docs/governance/CORE-TYPES-FREEZE-ARCHITECTURE-ACCEPTANCE-2026-08-20.md`.
+
 ---
 
 ## Revision History
@@ -220,3 +224,4 @@ Core Types Freeze Review may begin only when:
 |---------|------|--------|---------|
 | 1.0 | 2026-08-07 | Architecture Board | Initial release |
 | 1.1 | 2026-08-07 | Architecture Board | IMP-002 now references ADR-006 |
+| 1.2 | 2026-08-20 | Project Owner | Accepted the Core Types Freeze after IMP-001 through IMP-004 evidence review. |
