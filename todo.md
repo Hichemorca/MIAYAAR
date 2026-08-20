@@ -23,4 +23,4 @@
 - [x] Review the supplied non-sales evidence sources policy draft against canonical MIAYAAR governance, contracts, and methodology v1.2 without approving or implementing policy changes.
 - [x] Document the owner-approved SOURCE-01 through USAGE-01 research-governance decisions in the non-sales evidence policy without authorizing runtime, methodology, weight, coefficient, API, or database changes.
 - [x] Validate the adopted non-sales evidence policy and open a documentation-only pull request with the owner decisions and unresolved future gates preserved explicitly.
-- [ ] Promote the owner-approved NSE-RG-v1.0 policy from its documentation branch to main through a documentation-only pull request without operational changes.
+- [x] Promote the owner-approved NSE-RG-v1.0 policy from its documentation branch to main through a documentation-only pull request without operational changes.
