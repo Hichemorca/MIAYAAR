@@ -12,3 +12,4 @@
 - [x] Verify the PR #21 merge and production behavior of the report-linked Evidence Integrity panel.
 - [x] Review and classify provisional CALC-008 through CALC-016 in the decision record without code changes.
 - [x] Correct the CALC-015 disclosure by enumerating implemented provisional policy identifiers without changing valuation behavior.
+- [x] Run a policy gate for CALC-013 active-approach weight normalization without changing code or valuation outputs.
