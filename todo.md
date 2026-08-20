@@ -26,4 +26,4 @@
 - [x] Promote the owner-approved NSE-RG-v1.0 policy from its documentation branch to main through a documentation-only pull request without operational changes.
 - [x] Prepare and review a governance-only work plan for a candidate non-sales evidence-source registry; do not contact providers, collect data, or implement a registry.
 - [x] Create a governance-only candidate non-sales evidence-source registry template and glossary for phase A without listing sources, conducting external research, contacting providers, collecting data, or making operational changes.
-- [ ] Validate the phase A template and glossary against NSE-RG-v1.0 and open a documentation-only pull request with no source records or data.
+- [x] Validate the phase A template and glossary against NSE-RG-v1.0 and open a documentation-only pull request with no source records or data.
