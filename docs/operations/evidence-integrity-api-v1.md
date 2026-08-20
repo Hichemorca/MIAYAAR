@@ -1,9 +1,9 @@
 # Evidence Integrity Report API v1.0
 
-**Status:** Implemented for review on `feature/evidence-integrity-api`  
-**Policy:** `EID-v1.0`  
-**Surface:** Public tRPC query `evidenceIntegrity.report`  
-**Implementation date:** 2026-08-20
+- **Status:** Implemented in `main`
+- **Policy:** `EID-v1.0`
+- **Surface:** Public tRPC query `evidenceIntegrity.report`
+  **Implementation date:** 2026-08-20
 
 ## Purpose and boundary
 

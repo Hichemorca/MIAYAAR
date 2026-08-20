@@ -26,7 +26,9 @@ function functionContext(request: Request): TrpcContext {
 
 export function clientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0];
-  return normalizeClientIp(request.headers.get("x-nf-client-connection-ip") ?? forwarded ?? undefined);
+  return normalizeClientIp(
+    request.headers.get("x-nf-client-connection-ip") ?? forwarded ?? undefined
+  );
 }
 
 function rateLimitHeaders(remaining: number, resetAt: number): HeadersInit {
@@ -37,16 +39,30 @@ function rateLimitHeaders(remaining: number, resetAt: number): HeadersInit {
   };
 }
 
-function jsonError(status: number, code: string, message: string, headers?: HeadersInit) {
+function jsonError(
+  status: number,
+  code: string,
+  message: string,
+  headers?: HeadersInit
+) {
   return new Response(JSON.stringify({ error: { code, message } }), {
     status,
     headers: { "content-type": "application/json", ...headers },
   });
 }
 
-async function enforceValuationRateLimit(request: Request): Promise<Response | undefined> {
-  if (request.headers.get("X-MIAYAAR-Load-Test") && !canRunMarkedLoadTest(Netlify.env.get("MIAYAAR_ISOLATED_LOAD_TEST") === "1")) {
-    return jsonError(403, "LOAD_TEST_NOT_ALLOWED", "Marked load tests require an isolated MIAYAAR environment.");
+async function enforceValuationRateLimit(
+  request: Request
+): Promise<Response | undefined> {
+  if (
+    request.headers.get("X-MIAYAAR-Load-Test") &&
+    !canRunMarkedLoadTest(Netlify.env.get("MIAYAAR_ISOLATED_LOAD_TEST") === "1")
+  ) {
+    return jsonError(
+      403,
+      "LOAD_TEST_NOT_ALLOWED",
+      "Marked load tests require an isolated MIAYAAR environment."
+    );
   }
 
   const now = Date.now();
@@ -58,18 +74,37 @@ async function enforceValuationRateLimit(request: Request): Promise<Response | u
       expiresAt: new Date(windowStart + VALUATION_RATE_LIMIT_WINDOW_MS),
     });
     if (requestCount === undefined) {
-      return jsonError(503, "RATE_LIMIT_UNAVAILABLE", "Valuation protection is temporarily unavailable. Please try again shortly.");
+      return jsonError(
+        503,
+        "RATE_LIMIT_UNAVAILABLE",
+        "Valuation protection is temporarily unavailable. Please try again shortly."
+      );
     }
 
     const remaining = Math.max(0, VALUATION_REQUESTS_PER_MINUTE - requestCount);
-    const headers = rateLimitHeaders(remaining, windowStart + VALUATION_RATE_LIMIT_WINDOW_MS);
+    const headers = rateLimitHeaders(
+      remaining,
+      windowStart + VALUATION_RATE_LIMIT_WINDOW_MS
+    );
     if (requestCount > VALUATION_REQUESTS_PER_MINUTE) {
-      return jsonError(429, "RATE_LIMITED", "Too many valuation requests. Please try again shortly.", headers);
+      return jsonError(
+        429,
+        "RATE_LIMITED",
+        "Too many valuation requests. Please try again shortly.",
+        headers
+      );
     }
     return undefined;
   } catch (error) {
-    console.error("[Rate limit] Netlify request rejected because protection failed", error);
-    return jsonError(503, "RATE_LIMIT_UNAVAILABLE", "Valuation protection is temporarily unavailable. Please try again shortly.");
+    console.error(
+      "[Rate limit] Netlify request rejected because protection failed",
+      error
+    );
+    return jsonError(
+      503,
+      "RATE_LIMIT_UNAVAILABLE",
+      "Valuation protection is temporarily unavailable. Please try again shortly."
+    );
   }
 }
 
@@ -85,12 +120,24 @@ export default async (request: Request, _context: Context) => {
     req: request,
     router: appRouter,
     createContext: () => functionContext(request),
+    onError({ error, path, type }) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("[tRPC] development request failed", {
+          type,
+          path,
+          error,
+        });
+      }
+    },
   });
 
   if (pathname === "/api/trpc/valuation.run") {
     // The limiter ran successfully; preserve the service's normal response and
     // expose its quota metadata without duplicating response body consumption.
-    response.headers.set("RateLimit-Limit", VALUATION_REQUESTS_PER_MINUTE.toString());
+    response.headers.set(
+      "RateLimit-Limit",
+      VALUATION_REQUESTS_PER_MINUTE.toString()
+    );
   }
   return response;
 };
