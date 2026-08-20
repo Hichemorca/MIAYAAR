@@ -27,3 +27,6 @@
 - [x] Prepare and review a governance-only work plan for a candidate non-sales evidence-source registry; do not contact providers, collect data, or implement a registry.
 - [x] Create a governance-only candidate non-sales evidence-source registry template and glossary for phase A without listing sources, conducting external research, contacting providers, collecting data, or making operational changes.
 - [x] Validate the phase A template and glossary against NSE-RG-v1.0 and open a documentation-only pull request with no source records or data.
+- [x] Request owner-supplied information for one candidate non-sales evidence source under phase B; do not conduct external research, contact the source, access systems, or collect data.
+- [x] Create one governance-only candidate source record from owner-supplied information, validate its scope, and open a documentation-only pull request with no source access or data collection.
+- [x] Reconcile the owner-supplied four-source candidate package with the approved one-record limit for phase B before registering any candidate source record.
