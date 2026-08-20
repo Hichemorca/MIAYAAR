@@ -82,7 +82,15 @@ test('creates an immutable canonical Valuation with Money scenario bounds when a
     assert.ok(policies.includes('PROVISIONAL_CALC-010_CALC-011'));
     assert.ok(aggregationPolicies.every(policy => policy === 'PROVISIONAL_CALC-012_CALC-013'));
   }
-  assert.ok(result.warnings.some(warning => warning.code === 'VAL_WARN_PROVISIONAL_POLICY' && warning.message.includes('CALC-008 through CALC-016')));
+  const provisionalWarning = result.warnings.find(
+    warning => warning.code === 'VAL_WARN_PROVISIONAL_POLICY'
+  );
+  assert.deepEqual(provisionalWarning, {
+    code: 'VAL_WARN_PROVISIONAL_POLICY',
+    message:
+      'The completed valuation applies explicitly labelled provisional calculation rules pending methodology approval (CALC-008, CALC-009, CALC-010, CALC-011, CALC-012, CALC-013, CALC-014, CALC-016).',
+  });
+  assert.ok(!provisionalWarning?.message.includes('CALC-015'));
 });
 
 test('returns a transparent partial result when only sales comparison data is usable', async () => {
