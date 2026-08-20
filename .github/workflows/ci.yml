@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -38,6 +40,9 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Fetch formatting comparison base
+        run: git fetch origin "+refs/heads/${{ github.base_ref || 'main' }}:refs/remotes/origin/${{ github.base_ref || 'main' }}"
+
       - name: Type check
         run: pnpm check
 
@@ -46,6 +51,11 @@ jobs:
 
       - name: Build production artefacts
         run: pnpm build
+
+      - name: Check formatting of changed files
+        env:
+          FORMAT_BASE_REF: origin/${{ github.base_ref || 'main' }}
+        run: pnpm format:check
 
       - name: Validate whitespace changes
         run: git diff --check

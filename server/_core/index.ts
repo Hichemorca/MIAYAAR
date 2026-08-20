@@ -9,7 +9,14 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { consumeValuationRateLimitWindow } from "../db";
-import { VALUATION_REQUESTS_PER_MINUTE, VALUATION_RATE_LIMIT_WINDOW_MS, canRunMarkedLoadTest, createRateLimitWindowKey, normalizeClientIp, rateLimitWindowStart } from "../security/valuation-rate-limit";
+import {
+  VALUATION_REQUESTS_PER_MINUTE,
+  VALUATION_RATE_LIMIT_WINDOW_MS,
+  canRunMarkedLoadTest,
+  createRateLimitWindowKey,
+  normalizeClientIp,
+  rateLimitWindowStart,
+} from "../security/valuation-rate-limit";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -40,8 +47,16 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   app.use("/api/trpc/valuation.run", async (req, res, next) => {
-    if (req.header("X-MIAYAAR-Load-Test") && !canRunMarkedLoadTest(process.env.MIAYAAR_ISOLATED_LOAD_TEST === "1")) {
-      res.status(403).json({ error: { code: "LOAD_TEST_NOT_ALLOWED", message: "Marked load tests require an isolated MIAYAAR environment." } });
+    if (
+      req.header("X-MIAYAAR-Load-Test") &&
+      !canRunMarkedLoadTest(process.env.MIAYAAR_ISOLATED_LOAD_TEST === "1")
+    ) {
+      res.status(403).json({
+        error: {
+          code: "LOAD_TEST_NOT_ALLOWED",
+          message: "Marked load tests require an isolated MIAYAAR environment.",
+        },
+      });
       return;
     }
 
@@ -53,7 +68,13 @@ async function startServer() {
       expiresAt: new Date(windowStart + VALUATION_RATE_LIMIT_WINDOW_MS),
     });
     if (requestCount === undefined) {
-      res.status(503).json({ error: { code: "RATE_LIMIT_UNAVAILABLE", message: "Valuation protection is temporarily unavailable. Please try again shortly." } });
+      res.status(503).json({
+        error: {
+          code: "RATE_LIMIT_UNAVAILABLE",
+          message:
+            "Valuation protection is temporarily unavailable. Please try again shortly.",
+        },
+      });
       return;
     }
     const decision = {
@@ -63,9 +84,17 @@ async function startServer() {
     };
     res.setHeader("RateLimit-Limit", VALUATION_REQUESTS_PER_MINUTE.toString());
     res.setHeader("RateLimit-Remaining", decision.remaining.toString());
-    res.setHeader("RateLimit-Reset", Math.ceil(decision.resetAt / 1000).toString());
+    res.setHeader(
+      "RateLimit-Reset",
+      Math.ceil(decision.resetAt / 1000).toString()
+    );
     if (!decision.allowed) {
-      res.status(429).json({ error: { code: "RATE_LIMITED", message: "Too many valuation requests. Please try again shortly." } });
+      res.status(429).json({
+        error: {
+          code: "RATE_LIMITED",
+          message: "Too many valuation requests. Please try again shortly.",
+        },
+      });
       return;
     }
     next();
@@ -76,6 +105,15 @@ async function startServer() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError({ error, path, type }) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("[tRPC] development request failed", {
+            type,
+            path,
+            error,
+          });
+        }
+      },
     })
   );
   // development mode uses Vite, production mode uses static files
