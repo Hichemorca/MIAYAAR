@@ -46,3 +46,9 @@
 - [x] IMP-001: map all Valuation and Confidence audit timestamps against canonical Metadata and domain/evidence-time semantics defined by MET-01 and MET-03.
 - [x] IMP-001: implement only the metadata/audit-time contract changes approved by MET-01 through MET-03, keeping MarketSnapshot a bounded read model per MET-02.
 - [x] IMP-001: add regression tests and architecture-acceptance evidence proving no valuation, methodology, weighting, coefficient, comparable-selection, API, UI, or Market Intelligence behavior changes.
+- [x] IMP-003: inventory all vocabulary-like fields in core/types and classify each as closed business vocabulary, source-native, open human input, market-availability union, or UNRESOLVED.
+- [x] IMP-003: centralize only ADR-005/VOC-approved closed business vocabulary as enums without adding values or fallback literals.
+- [x] IMP-003: preserve source-native fields, open human input, and market-availability unions unchanged; document the policy basis for every exclusion.
+- [x] IMP-003: add regression tests, implementation-acceptance evidence, and a complete conversion/exclusion report proving that valuation behavior and out-of-scope systems remain unchanged.
+- [x] IMP-003: await an owner decision on the finite value sets or retained representations for Property Status and valuation approach, methodology, type, and purpose, recorded as UNRESOLVED in the implementation inventory.
+- [x] IMP-003: record the owner-approved closure decision that unresolved fields are not closed vocabulary and that no additional enum conversion is authorized.

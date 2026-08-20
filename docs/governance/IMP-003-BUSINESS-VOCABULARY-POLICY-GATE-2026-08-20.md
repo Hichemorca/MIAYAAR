@@ -1,8 +1,8 @@
 # MIAYAAR — IMP-003 Business Vocabulary Policy Gate
 
 **Date:** 2026-08-20  
-**Status:** Owner-approved inventory and VOC-01 to VOC-06 decisions recorded
-**Scope:** Documentation-only update to the IMP-003 Policy Gate in PR #39.
+**Status:** Owner-approved decisions and IMP-003 closure recorded
+**Scope:** Policy Gate record and IMP-003 closure documentation.
 
 > This document creates no enum, literal value, fallback, threshold, coefficient, or code change. It does not amend Core Types, interfaces, contracts, methodology v1.2, weights, the Valuation Engine, API, UI, data, or Market Intelligence.
 
@@ -10,7 +10,7 @@
 
 IMP-003 requires **Closed Business Vocabulary** to use the approved representation, while open human input remains string.[1] ADR-005 supplies that distinction.[2] The owner decisions below determine the governance classification of each inventoried category; they do not create a value set or modify a contract.
 
-**Result:** the policy-classification questions are resolved. **IMP-003 remains PARTIAL** because no Core Types implementation or acceptance review was authorized. **Core Types Freeze remains PENDING**.
+**Result:** the owner-approved implementation inventory confirms that all currently approved closed value sets are already represented by the central catalogue. The remaining fields are retained as `UNRESOLVED / NOT CLOSED VOCABULARY`, source-native, technical, reference, open-input, or preserved market-availability representations. **IMP-003 is IMPLEMENTED WITH NO ADDITIONAL APPROVED CONVERSIONS. Core Types Freeze remains PENDING architecture acceptance review.**
 
 ## Inventory and recorded policy
 
@@ -42,13 +42,13 @@ IMP-003 requires **Closed Business Vocabulary** to use the approved representati
 
 | Item              | Status                     | Reason                                                                                                                          |
 | ----------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| IMP-001           | **PARTIAL**                | Local audit-field reconciliation remains outside this gate.[1]                                                                  |
+| IMP-001           | **IMPLEMENTED**            | Audit-field reconciliation was completed under the separately approved MET-01 through MET-03 implementation scope.[1]          |
 | IMP-002           | **IMPLEMENTED**            | No change to the reconciled building-condition separation.                                                                      |
-| IMP-003           | **PARTIAL**                | Policy ownership is documented, but no Core Types implementation or acceptance review was authorized.[1]                        |
+| IMP-003           | **IMPLEMENTED**            | All approved closed vocabularies were already centralised; owner-approved retained representations require no further conversion. |
 | IMP-004           | **IMPLEMENTED**            | No change to the reconciled immutable-contract status.                                                                          |
-| Core Types Freeze | **PENDING / not closable** | The backlog requires every Critical item to be complete and Architecture Board approval; IMP-001 and IMP-003 remain Partial.[1] |
+| Core Types Freeze | **PENDING**                | Critical implementation items are complete; the remaining gate is Architecture Board acceptance review.[1]                     |
 
-No additional vocabulary value, benchmark, fallback, threshold, or coefficient decision is required to preserve the current documentation-only state. To close Core Types Freeze later, the owner must explicitly approve separate bounded implementation scopes for IMP-001 and IMP-003, then require acceptance review and Architecture Board approval. This statement does not authorize either scope.
+No additional vocabulary value, benchmark, fallback, threshold, or coefficient decision is required for IMP-003. The owner-approved retained representations are not technical gaps. To close Core Types Freeze, the remaining required gate is Architecture Board acceptance review; this statement does not authorise a further implementation scope.
 
 ## Stop condition
 
