@@ -20,3 +20,6 @@
 - [x] Validate the M-03/M-04 policy study against governing documents and open a documentation-only pull request with unresolved decisions preserved explicitly.
 - [x] Design a read-only evidence-acquisition and validation protocol for M-03/M-04 with provenance, linkage, as-of, isolation, and audit requirements; do not approve any partial-result policy or operational change.
 - [x] Validate the M-03/M-04 evidence protocol against the governing sources and open a documentation-only pull request preserving all unresolved policy decisions.
+- [x] Review the supplied non-sales evidence sources policy draft against canonical MIAYAAR governance, contracts, and methodology v1.2 without approving or implementing policy changes.
+- [x] Document the owner-approved SOURCE-01 through USAGE-01 research-governance decisions in the non-sales evidence policy without authorizing runtime, methodology, weight, coefficient, API, or database changes.
+- [x] Validate the adopted non-sales evidence policy and open a documentation-only pull request with the owner decisions and unresolved future gates preserved explicitly.
