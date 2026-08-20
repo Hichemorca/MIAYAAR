@@ -41,3 +41,5 @@
 - [x] Record the owner-approved VOC-01 through VOC-06 decisions in the IMP-003 Policy Gate on PR #39 only, then report the resulting status of IMP-003 and Core Types Freeze without changing any technical contract or implementation.
 - [x] Open a documentation-only successor PR to record VOC-01 through VOC-06 and the resulting IMP-003/Core Types Freeze status, because PR #39 merged before that authorized documentation update reached main.
 - [x] Conduct an IMP-001 Metadata Policy Gate: inventory local audit and time fields against canonical Metadata, classify their roles and evidence, and record only owner decisions required without modifying Core Types, contracts, methodology, valuation, API, UI, data, or Market Intelligence.
+- [x] Record the owner-approved MET-01 through MET-03 decisions in the IMP-001 Policy Gate and report the resulting status without modifying Core Types, MarketSnapshot, valuation, methodology, API, UI, data, or Market Intelligence.
+- [x] Open a documentation-only successor PR to record MET-01 through MET-03 and the resulting IMP-001/Core Types Freeze status, because PR #41 merged before that authorized documentation update reached main.
