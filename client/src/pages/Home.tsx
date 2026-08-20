@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { PropertySubmission } from "@shared/valuation/contracts";
 import { trpc } from "@/lib/trpc";
+import EvidenceIntegrityPanel from "@/components/EvidenceIntegrityPanel";
 
 const LazyValuationReport = lazy(() => import("@/components/ValuationReport"));
 
@@ -155,6 +156,7 @@ export default function Home() {
             {valuation.error && <div className="mi-error"><AlertTriangle size={17} />We could not complete this valuation. Please review the supplied data and try again.</div>}
             <div className="mi-evaluate-bar"><div><span>Live evaluation path</span><b>API → Evidence → Rules → Valuation → Report</b></div><button type="submit" disabled={valuation.isPending}>{valuation.isPending ? <LoaderCircle className="spin" size={17} /> : <Sparkles size={17} />}{valuation.isPending ? "Evaluating evidence…" : "Run valuation"}<ArrowUpRight size={17} /></button></div>
           </form>
+          <EvidenceIntegrityPanel district={form.district} propertyType={form.propertyType} />
         </section>
 
         <section id="valuation-report" className="mi-report-shell">
