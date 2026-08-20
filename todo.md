@@ -32,3 +32,4 @@
 - [x] Reconcile the owner-supplied four-source candidate package with the approved one-record limit for phase B before registering any candidate source record.
 - [x] Define the owner decision, documents, and factual inputs required to approve a bounded Phase C provenance-and-rights review for SRC-001 without accessing, collecting, or using source data.
 - [x] Conduct the owner-authorized Phase C passive provenance-and-rights review for SRC-001 using only the three supplied public URLs; record visible facts and unresolved rights without login, acceptance, download, API use, data collection, or valuation use.
+- [x] Evaluate SRC-001 under the owner-authorized G-3 governance gate using Phase C facts only; record a bounded usage-suitability decision without access, collection, processing, retention, sharing, deployment, or valuation use.
