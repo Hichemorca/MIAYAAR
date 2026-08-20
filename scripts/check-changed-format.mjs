@@ -15,7 +15,28 @@ const formatExtensions = new Set([
 ]);
 
 function git(args) {
-  return execFileSync("git", args, { encoding: "utf8" }).trim();
+  return execFileSync("git", args, {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
+function isPrettierCompliant(file, content) {
+  try {
+    execFileSync(
+      "pnpm",
+      ["exec", "prettier", "--check", "--stdin-filepath", file],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        input: content,
+        stdio: ["pipe", "pipe", "pipe"],
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 const baseRef = process.env.FORMAT_BASE_REF ?? "origin/main";
@@ -58,6 +79,32 @@ console.log(
     baseRef +
     "."
 );
-execFileSync("pnpm", ["exec", "prettier", "--check", ...changedFiles], {
+
+const filesToCheck = changedFiles.filter(file => {
+  let baseline;
+
+  try {
+    baseline = git(["show", mergeBase + ":" + file]);
+  } catch {
+    return true;
+  }
+
+  if (baseline && !isPrettierCompliant(file, baseline)) {
+    console.log(
+      "Skipping " +
+        file +
+        " because its baseline version is not Prettier-compliant."
+    );
+    return false;
+  }
+  return true;
+});
+
+if (filesToCheck.length === 0) {
+  console.log("No baseline-compliant changed files to check.");
+  process.exit(0);
+}
+
+execFileSync("pnpm", ["exec", "prettier", "--check", ...filesToCheck], {
   stdio: "inherit",
 });
