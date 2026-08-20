@@ -38,3 +38,5 @@
 - [x] Reconcile the status of critical Core Types backlog items IMP-001 through IMP-004 against the accepted ADRs and current main implementation, without changing contracts, valuation behavior, methodology, weights, coefficients, API, or UI.
 - [x] Prepare a one-page Stage Readiness Report only after PR #37 is closed, preserving the reconciled Core Types statuses and confirming that no new implementation may begin without explicit owner approval.
 - [x] Conduct an IMP-003 Business Vocabulary Policy Gate: inventory open contract fields, classify their governance status, and record owner decisions required without inventing vocabulary or modifying contracts, methodology, valuation, API, UI, or Market Intelligence.
+- [x] Record the owner-approved VOC-01 through VOC-06 decisions in the IMP-003 Policy Gate on PR #39 only, then report the resulting status of IMP-003 and Core Types Freeze without changing any technical contract or implementation.
+- [x] Open a documentation-only successor PR to record VOC-01 through VOC-06 and the resulting IMP-003/Core Types Freeze status, because PR #39 merged before that authorized documentation update reached main.
