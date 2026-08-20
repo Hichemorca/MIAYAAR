@@ -104,12 +104,15 @@ export interface Valuation {
   readonly id: ValuationIdentifier;
   /** Business metadata */
   readonly valuationMetadata: ValuationMetadata;
-  /** Technical metadata */
+  /**
+   * Canonical technical metadata, including the entity audit lifecycle.
+   * `metadata.timestamps.createdAt` is the only technical creation timestamp
+   * for this entity; `valuationMetadata.valuationDate` remains a separate
+   * business-domain fact.
+   */
   readonly metadata: Metadata;
   /** Valuation result */
   readonly result: ValuationResult;
-  /** Valuation creation timestamp */
-  readonly createdAt: Timestamp;
   /** Additional notes or comments */
   readonly notes?: string;
 }

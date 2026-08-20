@@ -43,6 +43,6 @@
 - [x] Conduct an IMP-001 Metadata Policy Gate: inventory local audit and time fields against canonical Metadata, classify their roles and evidence, and record only owner decisions required without modifying Core Types, contracts, methodology, valuation, API, UI, data, or Market Intelligence.
 - [x] Record the owner-approved MET-01 through MET-03 decisions in the IMP-001 Policy Gate and report the resulting status without modifying Core Types, MarketSnapshot, valuation, methodology, API, UI, data, or Market Intelligence.
 - [x] Open a documentation-only successor PR to record MET-01 through MET-03 and the resulting IMP-001/Core Types Freeze status, because PR #41 merged before that authorized documentation update reached main.
-- [ ] IMP-001: map all Valuation and Confidence audit timestamps against canonical Metadata and domain/evidence-time semantics defined by MET-01 and MET-03.
-- [ ] IMP-001: implement only the metadata/audit-time contract changes approved by MET-01 through MET-03, keeping MarketSnapshot a bounded read model per MET-02.
-- [ ] IMP-001: add regression tests and architecture-acceptance evidence proving no valuation, methodology, weighting, coefficient, comparable-selection, API, UI, or Market Intelligence behavior changes.
+- [x] IMP-001: map all Valuation and Confidence audit timestamps against canonical Metadata and domain/evidence-time semantics defined by MET-01 and MET-03.
+- [x] IMP-001: implement only the metadata/audit-time contract changes approved by MET-01 through MET-03, keeping MarketSnapshot a bounded read model per MET-02.
+- [x] IMP-001: add regression tests and architecture-acceptance evidence proving no valuation, methodology, weighting, coefficient, comparable-selection, API, UI, or Market Intelligence behavior changes.

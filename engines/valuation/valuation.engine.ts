@@ -315,7 +315,11 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
     scenarios: Record<Scenario, ScenarioValuation>,
     warnings: readonly Warning[],
   ): Valuation {
-    const timestamp = new Date().toISOString() as Timestamp;
+    // The valuation event and the technical record audit lifecycle are
+    // represented independently. They may be close in time for this in-memory
+    // execution, but neither field is a substitute for the other.
+    const valuationTimestamp = new Date().toISOString() as Timestamp;
+    const auditTimestamp = new Date().toISOString() as Timestamp;
     const requestId = request.requestId ?? randomUUID();
     const baseline = scenarios.baseline;
     const rangeWidthPercent = baseline.total.amount === 0
@@ -331,11 +335,11 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
       valuationMetadata: {
         type: 'EVIDENCE_LED_PROVISIONAL',
         propertyType: request.property.classification.type,
-        valuationDate: timestamp,
+        valuationDate: valuationTimestamp,
         purpose: 'MIAYAAR evidence-led property valuation',
         currency: baseline.total.currency.code,
       },
-      metadata: this.buildValuationMetadata(requestId, timestamp),
+      metadata: this.buildValuationMetadata(requestId, auditTimestamp),
       result: {
         value: baseline.total,
         lowerBound: scenarios.lower.total,
@@ -345,7 +349,6 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
         methodology: METHODOLOGY_DOCUMENT_ID,
         methodologyVersion: METHODOLOGY_VERSION,
       },
-      createdAt: timestamp,
       notes: warnings.map(warning => `${warning.code}: ${warning.message}`).join(' '),
     };
   }
