@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   AlertTriangle,
   CalendarClock,
@@ -24,6 +24,8 @@ import "./EvidenceIntegrityPanel.css";
 type EvidenceIntegrityPanelProps = {
   district: string;
   propertyType: EvidenceIntegrityPropertyType;
+  asOf?: Date;
+  autoRequest?: boolean;
 };
 
 const asDateInputValue = (date: Date) => date.toISOString().slice(0, 10);
@@ -103,11 +105,23 @@ function ResultDetails({ result }: { result: EvidenceIntegrityResult }) {
 export default function EvidenceIntegrityPanel({
   district,
   propertyType,
+  asOf: valuationAsOf,
+  autoRequest = false,
 }: EvidenceIntegrityPanelProps) {
+  const suppliedAsOfValue = valuationAsOf
+    ? asDateInputValue(valuationAsOf)
+    : undefined;
   const [asOfValue, setAsOfValue] = useState(() =>
-    asDateInputValue(new Date())
+    suppliedAsOfValue ?? asDateInputValue(new Date())
   );
-  const [hasRequested, setHasRequested] = useState(false);
+  const [hasRequested, setHasRequested] = useState(autoRequest);
+
+  useEffect(() => {
+    if (!suppliedAsOfValue) return;
+    setAsOfValue(suppliedAsOfValue);
+    setHasRequested(true);
+  }, [suppliedAsOfValue]);
+
   const asOf = useMemo(() => parseAsOfDate(asOfValue), [asOfValue]);
   const request = useMemo(
     () => ({ district, propertyType, asOf: asOf ?? new Date(0) }),
@@ -151,7 +165,9 @@ export default function EvidenceIntegrityPanel({
 
       <form className="ei-controls" onSubmit={inspectEvidence} noValidate>
         <label>
-          <span>As-of date</span>
+          <span>
+            {valuationAsOf ? "Valuation as-of date" : "As-of date"}
+          </span>
           <div>
             <CalendarClock size={15} />
             <input
@@ -159,6 +175,7 @@ export default function EvidenceIntegrityPanel({
               type="date"
               value={asOfValue}
               onChange={event => setAsOfValue(event.target.value)}
+              readOnly={Boolean(valuationAsOf)}
               required
             />
           </div>
@@ -172,7 +189,11 @@ export default function EvidenceIntegrityPanel({
           ) : (
             <Database size={16} />
           )}
-          {hasRequested ? "Refresh evidence" : "Inspect evidence"}
+          {hasRequested
+            ? valuationAsOf
+              ? "Refresh linked evidence"
+              : "Refresh evidence"
+            : "Inspect evidence"}
         </button>
       </form>
 
@@ -183,8 +204,9 @@ export default function EvidenceIntegrityPanel({
             <div>
               <b>{getEvidenceIntegrityHeading(state)}</b>
               <p>
-                Select the reporting date, then inspect the server-held DLD
-                record for this district and property type.
+                {valuationAsOf
+                  ? "The server-held DLD record is linked to this valuation's district, property type, and as-of date."
+                  : "Select the reporting date, then inspect the server-held DLD record for this district and property type."}
               </p>
             </div>
           </>

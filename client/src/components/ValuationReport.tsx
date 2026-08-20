@@ -6,6 +6,8 @@ import {
   Workflow,
 } from "lucide-react";
 import type { ValuationReport as ValuationReportData } from "../../../server/engines/reporting/valuation-report";
+import EvidenceIntegrityPanel from "./EvidenceIntegrityPanel";
+import { getCompletedValuationEvidenceContext } from "./valuation-report-evidence-context";
 
 type ValuationReportProps = {
   report: ValuationReportData;
@@ -34,6 +36,7 @@ function StatusBadge({ status }: { status: ValuationReportData["status"] }) {
 export default function ValuationReport({ report, requestId, resultSummary }: ValuationReportProps) {
   const valuationResult = report.valuation?.result;
   const methodCount = valuationResult?.approachResults.length ?? 0;
+  const evidenceIntegrityContext = getCompletedValuationEvidenceContext(report);
 
   return <>
     <div className="report-heading"><div><p className="mi-eyebrow">Valuation report · {requestId}</p><h2>{report.status === "rejected" ? "Evidence threshold not met." : "A value traceable to its evidence."}</h2><p>{resultSummary}</p></div><StatusBadge status={report.status} /></div>
@@ -51,6 +54,8 @@ export default function ValuationReport({ report, requestId, resultSummary }: Va
     {valuationResult && <section className="mi-methods"><div className="section-lead"><span>01</span><h3>Baseline approaches</h3><p>Weights are only normalized when an approach is unavailable; the methodology version remains fixed in the decision record.</p></div><div className="method-list">{valuationResult.approachResults.map(approach => <article className="approach-row" key={approach.approach}><div className="approach-name"><i /><div><b>{approach.approach}</b><small>{String(approach.metadata?.aggregationPolicy ?? "Canonical valuation approach")}</small></div></div><div><b>{formatAED(approach.value.amount)}</b><small>{Math.round(approach.weight * 100)}% applied weight</small></div><span className="method-bar"><i style={{ width: `${Math.round(approach.weight * 100)}%` }} /></span></article>)}</div></section>}
 
     <section id="evidence" className="mi-evidence"><div className="section-lead"><span>02</span><h3>Market evidence</h3><p>Only local, eligible DLD sales that passed the evidence rules are made available to the valuation.</p></div><div>{report.evidence.status === "available" ? <><div className="evidence-meta"><span><Database size={15} />Dubai Land Department</span><span><Workflow size={15} />{report.evidence.search.windowDays}-day search window</span><span><BadgeCheck size={15} />{report.evidence.comparables.length} eligible comparables</span></div><div className="evidence-table"><div className="evidence-head"><span>Transaction reference</span><span>Date</span><span>Area</span><span>Sale price</span><span>Time-adjusted AED/sqm</span></div>{report.evidence.comparables.slice(0, 8).map(item => <div className="evidence-row" key={item.sourceTransactionId}><span><b>{item.sourceTransactionId}</b><small>{titleize(item.district)}</small></span><span>{new Date(item.transactionDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span><span>{item.areaSqm.toLocaleString("en-AE")} sqm</span><span>{formatAED(item.salePriceAed)}</span><span>{formatAED(item.timeAdjustedPricePerSqm)}</span></div>)}</div></> : <div className="evidence-unavailable"><AlertTriangle size={20} /><div><b>Local evidence is insufficient</b><p>Found {report.evidence.availableCount} eligible records; the frozen methodology requires {report.evidence.requiredCount}. No city-wide substitute was used.</p></div></div>}</div></section>
+
+    <EvidenceIntegrityPanel {...evidenceIntegrityContext} autoRequest />
 
     {report.warnings.length > 0 && <div className="mi-warnings">{report.warnings.map(warning => <p key={warning}><AlertTriangle size={16} />{warning}</p>)}</div>}
     <div className="mi-audit"><ClipboardCheck size={22} /><div><b>Decision record</b><p>This request was processed under {report.methodology.documentId} v{report.methodology.version}. The record preserves its evidence gate, rules, applicable approaches, range, and warnings.</p></div><span>{methodCount} methods</span></div>
