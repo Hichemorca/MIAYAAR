@@ -11,3 +11,4 @@
 - [x] Link the read-only Evidence Integrity report to the completed valuation report context without changing valuation outputs.
 - [x] Verify the PR #21 merge and production behavior of the report-linked Evidence Integrity panel.
 - [x] Review and classify provisional CALC-008 through CALC-016 in the decision record without code changes.
+- [x] Correct the CALC-015 disclosure by enumerating implemented provisional policy identifiers without changing valuation behavior.

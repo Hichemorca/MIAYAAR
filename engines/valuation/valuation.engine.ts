@@ -304,7 +304,7 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
     if (calculations.some(calculation => calculation.provisional)) {
       warnings.push({
         code: 'VAL_WARN_PROVISIONAL_POLICY',
-        message: 'The completed valuation applies explicitly labelled provisional calculation rules pending methodology approval (CALC-008 through CALC-016).',
+        message: 'The completed valuation applies explicitly labelled provisional calculation rules pending methodology approval (CALC-008, CALC-009, CALC-010, CALC-011, CALC-012, CALC-013, CALC-014, CALC-016).',
       });
     }
     return warnings;
