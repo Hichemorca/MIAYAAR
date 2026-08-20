@@ -77,6 +77,9 @@ test('creates an immutable canonical Valuation with Money scenario bounds when a
     assert.ok(valuation.result.upperBound!.amount > valuation.result.value.amount);
     assert.ok(valuation.result.rangeWidthPercent! > 0);
     assert.equal(valuation.metadata.provenance.source.id, 'MIAYAAR-METH-001');
+    assert.equal('createdAt' in valuation, false);
+    assert.doesNotThrow(() => new Date(valuation.metadata.timestamps.createdAt).toISOString());
+    assert.doesNotThrow(() => new Date(valuation.valuationMetadata.valuationDate).toISOString());
     const policies = valuation.result.approachResults.map(approach => String(approach.metadata?.policy ?? ''));
     const aggregationPolicies = valuation.result.approachResults.map(approach => String(approach.metadata?.aggregationPolicy ?? ''));
     assert.ok(policies.includes('PROVISIONAL_CALC-010_CALC-011'));

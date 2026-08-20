@@ -24,7 +24,7 @@ It must not infer additional architectural changes.
 
 | ID | Title | ADR | Priority | Status |
 |----|-------|-----|----------|--------|
-| IMP-001 | Platform Metadata | ADR-002 | Critical | Pending |
+| IMP-001 | Platform Metadata | ADR-002 | Critical | Implemented |
 | IMP-002 | Building Condition | ADR-006 | Critical | Pending |
 | IMP-003 | Business Vocabulary | ADR-005 | Critical | Pending |
 | IMP-004 | Immutable Contracts | ADR-004 | Critical | Pending |
@@ -41,18 +41,18 @@ It must not infer additional architectural changes.
 
 **Priority:** Critical
 
-**Status:** Pending
+**Status:** Implemented
 
 **Description:**
 
-Replace local audit fields in `Valuation` and `Confidence` with the shared `Metadata` model from `core/types/metadata.ts`.
+Replace local audit fields in `Valuation` and `Confidence` with the shared `Metadata` model from `core/types/metadata.ts`. This was implemented under the separately owner-approved MET-01 through MET-03 scope on 2026-08-20.
 
 **Scope:**
 
 - Verify `Valuation` uses `Metadata`.
 - Verify `Confidence` uses `Metadata`.
 - Ensure `Property` uses `Metadata`.
-- Remove any local audit fields.
+- Remove any local audit fields. `ValuationMetadata.valuationDate` and `ConfidenceAssessment.assessedAt` remain separate domain facts; they are not audit fields.
 
 **Acceptance Criteria:**
 

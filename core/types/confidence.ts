@@ -101,10 +101,13 @@ export interface Confidence {
   readonly assessment: ConfidenceAssessment;
   /** Overall confidence summary */
   readonly overall: OverallConfidence;
-  /** Technical metadata */
+  /**
+   * Canonical technical metadata, including the entity audit lifecycle.
+   * `metadata.timestamps.createdAt` is the only technical creation timestamp
+   * for this entity; `assessment.assessedAt` remains a separate business-domain
+   * assessment fact.
+   */
   readonly metadata: Metadata;
-  /** Creation timestamp */
-  readonly createdAt: Timestamp;
   /** Additional notes */
   readonly notes?: string;
 }

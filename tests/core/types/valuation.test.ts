@@ -1,10 +1,8 @@
 ﻿/**
  * Regression test for the canonical Valuation contract in core/types.
  *
- * core/types is frozen and out of scope for modification. This test exists
- * only to guard against accidental future shape drift -- it constructs a
- * real, fully valid Valuation object using nothing but the documented
- * fields, with no `as` casts.
+ * This test guards the IMP-001 contract: entity audit time is owned only by
+ * canonical Metadata, while the valuation's business date remains explicit.
  */
 
 import { test } from 'vitest';
@@ -22,14 +20,14 @@ test('the canonical Valuation contract can be constructed exactly as documented'
     valuationMetadata: {
       type: 'FULL',
       propertyType: PropertyType.APARTMENT,
-      valuationDate: '2026-01-01T00:00:00.000Z',
+      valuationDate: '2026-01-15T00:00:00.000Z',
       currency: 'AED',
     },
     metadata: {
       id: 'meta-001',
       timestamps: {
-        createdAt: '2026-01-01T00:00:00.000Z',
-        updatedAt: '2026-01-01T00:00:00.000Z',
+        createdAt: '2026-01-16T00:00:00.000Z',
+        updatedAt: '2026-01-16T00:00:00.000Z',
       },
       audit: { createdBy: 'test', updatedBy: 'test' },
       version: {
@@ -57,10 +55,13 @@ test('the canonical Valuation contract can be constructed exactly as documented'
       methodology: 'MIAYAAR-METH-001',
       methodologyVersion: '1.1',
     },
-    createdAt: '2026-01-01T00:00:00.000Z',
   };
 
   assert.equal(valuation.result.value.amount, 1_000_000);
   assert.equal(valuation.result.approachResults.length, 0);
   assert.equal(valuation.valuationMetadata.propertyType, PropertyType.APARTMENT);
+  assert.equal('createdAt' in valuation, false);
+  assert.equal(valuation.metadata.timestamps.createdAt, '2026-01-16T00:00:00.000Z');
+  assert.equal(valuation.valuationMetadata.valuationDate, '2026-01-15T00:00:00.000Z');
+  assert.notEqual(valuation.metadata.timestamps.createdAt, valuation.valuationMetadata.valuationDate);
 });
