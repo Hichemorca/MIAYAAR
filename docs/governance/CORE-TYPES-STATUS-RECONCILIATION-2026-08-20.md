@@ -7,6 +7,8 @@
 
 > This record classifies the implementation state against the accepted Core Types ADRs and the Core Types backlog. It does **not** alter any contract, valuation behavior, methodology v1.2, weight, coefficient, API, database schema, UI, or source-governance decision.
 
+> **Supersession notice — 2026-08-20:** This is a historical reconciliation of the `c1d1289` baseline. Its findings for IMP-001, IMP-003, and Core Types Freeze were superseded by the owner-approved implementations merged through PR #44 and the architecture acceptance record `CORE-TYPES-FREEZE-ARCHITECTURE-ACCEPTANCE-2026-08-20.md`. The current state is IMP-001 through IMP-004 implemented and **Core Types Freeze closed — architecture accepted**. The historical evidence and rationale below remain unchanged.
+
 ## Executive finding
 
 The Core Types module contains material implementation of all four critical ADR directions, but only two backlog items satisfy their recorded acceptance criteria in full. **IMP-002** and **IMP-004** are **IMPLEMENTED**. **IMP-001** and **IMP-003** are **PARTIAL** because local audit timestamps remain outside the shared metadata model and because several lifecycle or classification vocabularies remain unconstrained strings. Accordingly, the Core Types Freeze cannot be represented as complete under the backlog's own completion criteria.[1]

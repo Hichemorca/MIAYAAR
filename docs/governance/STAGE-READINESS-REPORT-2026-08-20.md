@@ -1,10 +1,12 @@
 # MIAYAAR — Stage Readiness Report
 
 **Date:** 2026-08-20  
-**Status:** Post-PR #37; governance-only  
+**Status:** Historical post-PR #37; governance-only
 **Purpose:** Record what may be relied upon, what remains open, and which owner decisions are required before any new work starts.
 
 > This report authorizes no implementation. No Core Types, interface, contract, methodology, valuation, API, UI, data, or Market Intelligence file is changed by this report.
+
+> **Supersession notice — 2026-08-20:** This report records the position immediately after PR #37. Its statements that IMP-001 and IMP-003 are partial and that Core Types Freeze is pending have been superseded by the owner-approved implementations merged through PR #44 and `CORE-TYPES-FREEZE-ARCHITECTURE-ACCEPTANCE-2026-08-20.md`. The current Core Types status is IMP-001 through IMP-004 implemented and **Core Types Freeze closed — architecture accepted**. Other stage observations remain historical to this report's baseline.
 
 ## Stable and usable facts
 

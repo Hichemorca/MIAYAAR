@@ -52,3 +52,7 @@
 - [x] IMP-003: add regression tests, implementation-acceptance evidence, and a complete conversion/exclusion report proving that valuation behavior and out-of-scope systems remain unchanged.
 - [x] IMP-003: await an owner decision on the finite value sets or retained representations for Property Status and valuation approach, methodology, type, and purpose, recorded as UNRESOLVED in the implementation inventory.
 - [x] IMP-003: record the owner-approved closure decision that unresolved fields are not closed vocabulary and that no additional enum conversion is authorized.
+- [x] Verify PR #44 is merged into main and record the post-merge Core Types Freeze status without starting a new implementation phase.
+- [x] Compare the merged main branch against the official phase-status map and report completed, blocked, and decision-gated roadmap stages without starting new work.
+- [x] Prepare an architecture acceptance review that verifies IMP-001 and IMP-003 closure evidence and records the owner-approved Core Types Freeze decision without technical changes.
+- [x] Validate the acceptance record and open a documentation-only pull request to place the Core Types Freeze decision on main.
