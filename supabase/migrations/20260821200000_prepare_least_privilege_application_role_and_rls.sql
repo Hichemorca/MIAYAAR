@@ -67,15 +67,22 @@ grant usage, select on sequence public."users_id_seq" to miayaar_app;
 grant usage, select on sequence public."methodologyVersions_id_seq" to miayaar_app;
 grant usage, select on sequence public."valuationAuditEvents_id_seq" to miayaar_app;
 
--- Future public-schema relations created by the current migration executor must
--- not become direct-client accessible implicitly. The application role receives
--- no default grants: each future table needs an explicit policy decision.
---
--- The Supabase migration executor authenticates as `postgres` but is not a
--- superuser. Omitting `FOR ROLE postgres` applies these statements to that
--- current executor while avoiding an unauthorized attempt to alter another role.
-alter default privileges in schema public revoke all on tables from public;
-alter default privileges in schema public revoke all on sequences from public;
+-- The configured Supabase migration executor cannot alter default privileges
+-- of the platform-owned `postgres` role. Default-privilege hardening for future
+-- relations is therefore a separate platform-privileged follow-up. No future
+-- table is implicitly granted to `miayaar_app`; every future application grant
+-- and policy still needs its own governed migration.
+
+-- Existing direct-client grants inherited from the platform default privileges
+-- must not coexist with this server-only RLS boundary.
+revoke all privileges on table public."users" from anon, authenticated;
+revoke all privileges on table public."methodologyVersions" from anon, authenticated;
+revoke all privileges on table public."valuationRequests" from anon, authenticated;
+revoke all privileges on table public."valuationAuditEvents" from anon, authenticated;
+revoke all privileges on table public."marketTransactions" from anon, authenticated;
+revoke all privileges on table public."dldImportRuns" from anon, authenticated;
+revoke all privileges on table public."dldImportIssues" from anon, authenticated;
+revoke all privileges on table public."valuationRateLimitWindows" from anon, authenticated;
 
 alter table public."users" enable row level security;
 alter table public."methodologyVersions" enable row level security;
