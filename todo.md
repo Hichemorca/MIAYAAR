@@ -125,3 +125,4 @@
 - [ ] U-010 rollout: apply the approved restricted-role, least-privilege grants, default privileges, and explicit RLS policy migrations on Supabase without changing `DATABASE_URL`.
 - [ ] U-010 rollout: verify role attributes, grants, RLS posture, policies, and the existing production valuation path; record the result and rollback if any acceptance check fails.
 - [ ] U-010 rollout: correct the migration's owner-qualified default-privilege statement after Supabase rejected it despite the approved executor being `postgres`; preserve the same current-owner default-privilege restriction and re-run quality gates before retrying.
+- [ ] U-010 rollout: remove the unexecutable default-privilege statement after the Supabase executor rejects it even for the current `postgres` session; revoke direct `anon` and `authenticated` grants from the eight governed existing tables, and record future default-privilege hardening as a platform-privileged follow-up.

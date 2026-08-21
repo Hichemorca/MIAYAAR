@@ -30,11 +30,19 @@ and the existing RLS readiness review remain authoritative.
 The migration creates a login role with `PASSWORD NULL` only when it does not
 already exist. No password or connection string appears in repository files. A
 privileged operator must establish its credential through the approved secret
-management path only after a separate owner decision. Its default-privilege
-statements intentionally operate as the authenticated migration executor rather
-than naming `postgres` as a separate role, because Supabase grants that executor
-role-creation authority without superuser authority to alter another role's
-default privileges.
+management path only after a separate owner decision.
+
+### 2.1 Supabase default-privilege constraint
+
+The production evidence shows that `postgres` has platform-configured default
+grants to `anon` and `authenticated`, while the approved migration executor is
+not a PostgreSQL superuser. Supabase therefore rejects attempts to alter that
+platform-owned role's default privileges, including when the session itself is
+named `postgres`. This package does **not** pretend to change those future-table
+defaults. Instead, it revokes direct `anon` and `authenticated` grants from all
+eight governed existing tables and applies RLS policies there. A later
+platform-privileged change is required to govern default privileges for future
+relations; it is not silently substituted by this rollout.
 
 ## 3. Least-privilege matrix
 
@@ -107,8 +115,10 @@ The change may be considered effective only if all of the following are true.
   relations.
 - No connection URL, password, host, or query text is surfaced in logs, UI, API
   responses, source control, or documentation.
-- The migration verification includes default privileges for relations created
-  by `postgres` in `public` after the cutover.
+- Each of the eight governed existing tables has no `anon` or `authenticated`
+  table privilege and no direct-client RLS policy.
+- The default-privilege posture for future relations is recorded as a separate
+  platform-privileged follow-up; it is not an acceptance claim for this rollout.
 
 ## 7. Rollback boundary
 

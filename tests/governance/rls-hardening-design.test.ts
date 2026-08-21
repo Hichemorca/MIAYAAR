@@ -94,6 +94,7 @@ describe("RLS hardening design", () => {
 
   test("prepares a non-bypass application role with only reviewed relation privileges", () => {
     const migration = readFileSync(applicationRoleMigrationPath, "utf8");
+    const executableSql = migration.replace(/^--.*$/gm, "");
 
     expect(migration).toContain("create role miayaar_app");
     expect(migration).toContain("nosuperuser");
@@ -105,11 +106,14 @@ describe("RLS hardening design", () => {
     expect(migration).toContain('grant select on table public."marketTransactions" to miayaar_app;');
     expect(migration).toContain('grant select on table public."dldImportRuns" to miayaar_app;');
     expect(migration).toContain('grant usage, select on sequence public."users_id_seq" to miayaar_app;');
-    expect(migration).toContain('alter default privileges in schema public revoke all on tables from public;');
-    expect(migration).toContain('alter default privileges in schema public revoke all on sequences from public;');
+    protectedTables.forEach(table => {
+      expect(migration).toContain(
+        `revoke all privileges on table public."${table}" from anon, authenticated;`
+      );
+    });
     expect(migration).not.toMatch(/grant\s+all\s+privileges/i);
     expect(migration).not.toMatch(/grant\s+.*dldImportIssues.*miayaar_app/i);
-    expect(migration).not.toMatch(/alter\s+default\s+privileges\s+for\s+role\s+postgres/i);
+    expect(executableSql).not.toMatch(/alter\s+default\s+privileges/i);
     expect(migration).not.toMatch(/alter\s+role\s+postgres/i);
   });
 
