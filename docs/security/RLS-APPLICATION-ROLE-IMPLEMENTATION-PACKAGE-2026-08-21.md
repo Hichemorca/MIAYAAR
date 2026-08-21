@@ -30,7 +30,11 @@ and the existing RLS readiness review remain authoritative.
 The migration creates a login role with `PASSWORD NULL` only when it does not
 already exist. No password or connection string appears in repository files. A
 privileged operator must establish its credential through the approved secret
-management path only after a separate owner decision.
+management path only after a separate owner decision. Its default-privilege
+statements intentionally operate as the authenticated migration executor rather
+than naming `postgres` as a separate role, because Supabase grants that executor
+role-creation authority without superuser authority to alter another role's
+default privileges.
 
 ## 3. Least-privilege matrix
 

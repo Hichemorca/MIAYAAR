@@ -67,11 +67,15 @@ grant usage, select on sequence public."users_id_seq" to miayaar_app;
 grant usage, select on sequence public."methodologyVersions_id_seq" to miayaar_app;
 grant usage, select on sequence public."valuationAuditEvents_id_seq" to miayaar_app;
 
--- Future public-schema relations created by the current owner must not become
--- direct-client accessible implicitly. The application role receives no default
--- grants: each future table needs an explicit policy decision.
-alter default privileges for role postgres in schema public revoke all on tables from public;
-alter default privileges for role postgres in schema public revoke all on sequences from public;
+-- Future public-schema relations created by the current migration executor must
+-- not become direct-client accessible implicitly. The application role receives
+-- no default grants: each future table needs an explicit policy decision.
+--
+-- The Supabase migration executor authenticates as `postgres` but is not a
+-- superuser. Omitting `FOR ROLE postgres` applies these statements to that
+-- current executor while avoiding an unauthorized attempt to alter another role.
+alter default privileges in schema public revoke all on tables from public;
+alter default privileges in schema public revoke all on sequences from public;
 
 alter table public."users" enable row level security;
 alter table public."methodologyVersions" enable row level security;
