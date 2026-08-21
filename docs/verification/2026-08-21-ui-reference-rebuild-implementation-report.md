@@ -1,6 +1,6 @@
 # UI Reference Rebuild — Implementation Report
 
-**Status:** Implemented locally; pull request and remote checks pending.  
+**Status:** Implemented; PR #53 CI and Netlify Deploy Preview passed.
 **Date:** 2026-08-21.  
 **Scope authority:** Owner-approved UI Reference Rebuild.
 
@@ -104,8 +104,8 @@ The rebuild does not change Core Types, contracts, the public API, valuation eng
 | `git diff --check`     | Passed locally                      |
 | Desktop preview        | Passed at 1440 × 1000               |
 | Mobile preview         | Passed at 390 × 844                 |
-| GitHub CI              | Pending after pull request          |
-| Netlify Deploy Preview | Pending after pull request          |
+| GitHub CI              | Passed: MIAYAAR CI                  |
+| Netlify Deploy Preview | Passed: Deploy Preview              |
 
 The desktop preview showed desktop navigation, the evidence-led hero, and the property-file entry point with a readable hierarchy. The mobile preview showed a readable compact header, hero copy, evidence commitments, and property-file entry point without horizontal overflow in the captured viewport. The captures were used only for local verification and are not product assets.
 
