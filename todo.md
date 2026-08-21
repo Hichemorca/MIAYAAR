@@ -110,3 +110,4 @@
 - [x] Post-merge: verify PR #54 merge record, mandatory main CI, and production deployment identity without modifying runtime behavior or Supabase.
 - [ ] Roadmap: review the official phase-status map after PR #54 closure and present the next owner-gated scope without starting implementation automatically.
 - [x] U-006 RLS readiness review: inspect table ownership, grants, policies, and migration impact in read-only mode; document a conditional no-go, runtime-role evidence requirement, rollback steps, and post-application verification without applying any database change.
+- [ ] U-007 Server connection-role evidence: add a protected, non-secret operational check that reports only the effective deployed database role attributes needed for RLS readiness; preserve all database state, valuation paths, API contracts, and RLS-disabled posture.

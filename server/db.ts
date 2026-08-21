@@ -209,6 +209,93 @@ export async function getGovernanceStorageSnapshot() {
   }
 }
 
+/**
+ * A minimal, read-only runtime identity observation for the server connection.
+ * This deliberately returns role attributes only: it never exposes a connection
+ * string, host, database name, credential, query text, or application data.
+ */
+export type ServerConnectionRoleEvidence =
+  | {
+      status: "OBSERVED";
+      effectiveRole: string;
+      sessionRole: string;
+      effectiveRoleMatchesSessionRole: boolean;
+      isSuperuser: boolean;
+      bypassesRls: boolean;
+    }
+  | {
+      status: "UNAVAILABLE";
+      effectiveRole: null;
+      sessionRole: null;
+      effectiveRoleMatchesSessionRole: null;
+      isSuperuser: null;
+      bypassesRls: null;
+    };
+
+function unavailableServerConnectionRoleEvidence(): ServerConnectionRoleEvidence {
+  return {
+    status: "UNAVAILABLE",
+    effectiveRole: null,
+    sessionRole: null,
+    effectiveRoleMatchesSessionRole: null,
+    isSuperuser: null,
+    bypassesRls: null,
+  };
+}
+
+export async function getServerConnectionRoleEvidence(): Promise<ServerConnectionRoleEvidence> {
+  const db = await getDb();
+  if (!db) return unavailableServerConnectionRoleEvidence();
+
+  try {
+    const result = await db.execute(sql`
+      SELECT
+        current_user AS "effectiveRole",
+        session_user AS "sessionRole",
+        current_user = session_user AS "effectiveRoleMatchesSessionRole",
+        COALESCE(
+          (SELECT rolsuper FROM pg_roles WHERE rolname = current_user),
+          false
+        ) AS "isSuperuser",
+        COALESCE(
+          (SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user),
+          false
+        ) AS "bypassesRls"
+    `);
+    const row = result.rows[0] as
+      | {
+          effectiveRole?: unknown;
+          sessionRole?: unknown;
+          effectiveRoleMatchesSessionRole?: unknown;
+          isSuperuser?: unknown;
+          bypassesRls?: unknown;
+        }
+      | undefined;
+
+    if (
+      typeof row?.effectiveRole !== "string" ||
+      typeof row.sessionRole !== "string" ||
+      typeof row.effectiveRoleMatchesSessionRole !== "boolean" ||
+      typeof row.isSuperuser !== "boolean" ||
+      typeof row.bypassesRls !== "boolean"
+    ) {
+      return unavailableServerConnectionRoleEvidence();
+    }
+
+    return {
+      status: "OBSERVED",
+      effectiveRole: row.effectiveRole,
+      sessionRole: row.sessionRole,
+      effectiveRoleMatchesSessionRole: row.effectiveRoleMatchesSessionRole,
+      isSuperuser: row.isSuperuser,
+      bypassesRls: row.bypassesRls,
+    };
+  } catch {
+    console.warn("[Database] Server connection role evidence is unavailable");
+    return unavailableServerConnectionRoleEvidence();
+  }
+}
+
 export async function createValuationRequest(record: typeof valuationRequests.$inferInsert): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Valuation request storage is unavailable.");

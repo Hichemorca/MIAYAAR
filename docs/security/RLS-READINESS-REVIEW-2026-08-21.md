@@ -115,19 +115,33 @@ connection string, token, or other credential.
 | Functional boundaries | No valuation output, methodology version, weight, coefficient, Core Type, or public API contract changes.                                                                          |
 | Recovery readiness    | If a smoke test fails, the owner-authorized rollback procedure is available before any broader release action.                                                                     |
 
-The runtime-role proof is deliberately unresolved in this record. It must be
-obtained through an approved deployment-side operational mechanism that does
-not reveal credentials and does not introduce an application feature merely to
-inspect the connection. The review does not authorize adding such a mechanism.
+### 6.2 Approved runtime-role evidence mechanism (U-007)
+
+The owner approved a narrowly bounded mechanism to obtain the missing evidence.
+It extends the existing signed Netlify `deploySucceeded` event handler rather
+than adding an HTTP path, tRPC procedure, client feature, or database write. On
+an attested `main` production deployment only, the deployed server's existing
+`DATABASE_URL` pool executes one read-only identity query and records only the
+effective role, session role, whether they match, and the role's `rolsuper` and
+`rolbypassrls` attributes. The record excludes the connection string, hostname,
+database name, credentials, user input, valuation data, DLD evidence, and query
+failure details. [5] [6]
+
+The mechanism can record either `OBSERVED` or `UNAVAILABLE`; it does not apply
+RLS, create a policy, change a grant, or make an RLS application decision. An
+`UNAVAILABLE` record leaves Gate C blocked. Even an `OBSERVED` record supplies
+only the runtime-role evidence for Gate C; Gates A, B, D, and E remain mandatory
+and require their own fresh evidence and a second explicit owner approval.
 
 ## 7. Status
 
 **CONDITIONAL NO-GO.** The database evidence confirms the eight-table scope,
 current exposure, absence of policies, absence of in-scope foreign keys, and a
-bounded rollback path. The sole unresolved deployment-critical condition is the
-runtime role used by the deployed server's `DATABASE_URL`; the administrative
-inspection role must not be treated as a substitute for that evidence. No
-application approval is implied by this record.
+bounded rollback path. The approved U-007 mechanism may now collect the missing
+runtime-role evidence on a future attested production deployment, but no such
+observation exists in this record yet. The administrative inspection role must
+not be treated as a substitute for that evidence. No application approval is
+implied by this record.
 
 ## References
 
@@ -135,3 +149,5 @@ application approval is implied by this record.
 [2]: `docs/security/RLS-HARDENING-DESIGN-2026-08-21.md` — least-privilege policy design  
 [3]: https://supabase.com/docs/guides/database/postgres/row-level-security — RLS guidance  
 [4]: https://supabase.com/docs/guides/database/database-linter?lint=0013_rls_disabled_in_public — security advisor remediation reference
+[5]: `netlify/functions/deploy-attestation.ts` — signed production deployment event and non-secret role-evidence record
+[6]: `server/db.ts` — read-only deployed connection-role observation

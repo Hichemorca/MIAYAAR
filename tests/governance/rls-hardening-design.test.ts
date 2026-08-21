@@ -60,9 +60,10 @@ describe("RLS hardening design", () => {
     const readinessReview = readFileSync(readinessReviewPath, "utf8");
 
     expect(readinessReview).toContain("**CONDITIONAL NO-GO.**");
-    expect(readinessReview).toContain(
-      "runtime role used by the deployed server"
-    );
-    expect(readinessReview).toContain("second explicit owner decision");
+    expect(readinessReview).toContain("runtime-role evidence");
+    expect(readinessReview).toMatch(/rather\s+than adding an HTTP path/);
+    expect(readinessReview).toContain("database write");
+    expect(readinessReview).toMatch(/no such\s+observation exists/);
+    expect(readinessReview).toContain("second explicit owner approval");
   });
 });
