@@ -15,6 +15,10 @@ const readinessReviewPath = path.join(
   repositoryRoot,
   "docs/security/RLS-READINESS-REVIEW-2026-08-21.md"
 );
+const connectionRoleStrategyPath = path.join(
+  repositoryRoot,
+  "docs/security/RLS-CONNECTION-ROLE-STRATEGY-REVIEW-2026-08-21.md"
+);
 
 const protectedTables = [
   "users",
@@ -56,7 +60,7 @@ describe("RLS hardening design", () => {
     protectedTables.forEach(table => expect(design).toContain(`\`${table}\``));
   });
 
-  test("keeps the readiness review conditional until the deployed server role is evidenced", () => {
+  test("preserves the historical readiness record and links later runtime-role evidence", () => {
     const readinessReview = readFileSync(readinessReviewPath, "utf8");
 
     expect(readinessReview).toContain("**CONDITIONAL NO-GO.**");
@@ -65,5 +69,18 @@ describe("RLS hardening design", () => {
     expect(readinessReview).toContain("database write");
     expect(readinessReview).toMatch(/no such\s+observation exists/);
     expect(readinessReview).toContain("second explicit owner approval");
+    expect(readinessReview).toContain("### 7.1 Subsequent runtime-role evidence update");
+    expect(readinessReview).toContain("rolbypassrls=true");
+    expect(readinessReview).toContain("RLS-CONNECTION-ROLE-STRATEGY-REVIEW-2026-08-21.md");
+  });
+
+  test("records that the observed production role bypasses RLS and requires a separate transition", () => {
+    const strategy = readFileSync(connectionRoleStrategyPath, "utf8");
+
+    expect(strategy).toContain("`current_user=postgres`; `session_user=postgres`");
+    expect(strategy).toContain("`rolbypassrls=true`");
+    expect(strategy).toContain("**Only eligible design direction.**");
+    expect(strategy).toContain("must **not** be applied as a stand-alone step");
+    expect(strategy).toContain("No technical implementation should start automatically");
   });
 });
