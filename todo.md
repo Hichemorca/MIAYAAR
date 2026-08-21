@@ -78,5 +78,5 @@
 - [x] Roadmap: review the official phase-status map after the Phase 6 policy-gate merge and present the next owner-gated scope without starting it automatically.
 - [x] Forensic Diagnostics Policy Gate: inventory existing Evidence Integrity, comparable-selection, confidence, market-context, and public API boundaries without modifying operational code or contracts.
 - [x] Forensic Diagnostics Policy Gate: document the approved facts, prohibited diagnostic claims, candidate policy decisions, and all unresolved items without creating a taxonomy, threshold, score, or rule.
-- [ ] Forensic Diagnostics Policy Gate: verify the documentation, open a documentation-only pull request, and confirm CI and Netlify Deploy Preview.
+- [x] Forensic Diagnostics Policy Gate: verify the documentation, open a documentation-only pull request, and confirm CI and Netlify Deploy Preview.
 - [ ] Forensic Diagnostics Policy Gate: report the policy-gate outcome and await a separately approved implementation scope.
