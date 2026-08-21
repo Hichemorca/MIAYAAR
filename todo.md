@@ -82,5 +82,5 @@
 - [x] Forensic Diagnostics Policy Gate: report the policy-gate outcome and await a separately approved implementation scope.
 - [x] Temporal Backtesting Governance Review: inventory the current read-only backtesting protocol, historical harness, results, and source boundaries without running a new study or modifying operational code.
 - [x] Temporal Backtesting Governance Review: reconcile the historical comparable-selection replay with CS-v1.0, documenting alignment, divergence, and all unresolved policy decisions without inventing rules.
-- [ ] Temporal Backtesting Governance Review: write and validate a documentation-only policy-gate record, open a pull request, and confirm CI and Netlify Deploy Preview.
+- [x] Temporal Backtesting Governance Review: write and validate a documentation-only policy-gate record, open a pull request, and confirm CI and Netlify Deploy Preview.
 - [ ] Temporal Backtesting Governance Review: report the outcome and await a separately approved implementation scope.
