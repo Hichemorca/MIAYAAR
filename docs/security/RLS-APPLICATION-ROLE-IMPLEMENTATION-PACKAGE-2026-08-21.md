@@ -32,6 +32,14 @@ already exist. No password or connection string appears in repository files. A
 privileged operator must establish its credential through the approved secret
 management path only after a separate owner decision.
 
+During the approved production rollout, Supabase rejected `ALTER ROLE` despite
+the executor's `CREATEROLE` capability. The observed role did not exist after
+each failed atomic attempt. With explicit owner approval, this package therefore
+retains every constrained attribute in the guarded `CREATE ROLE` statement and
+omits the redundant post-create alteration. This is safe only while preflight
+continues to prove that `miayaar_app` is absent; a pre-existing role requires a
+new review rather than silent attribute changes.
+
 ### 2.1 Supabase default-privilege constraint
 
 The production evidence shows that `postgres` has platform-configured default

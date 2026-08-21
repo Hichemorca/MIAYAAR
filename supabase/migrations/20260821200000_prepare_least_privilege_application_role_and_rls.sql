@@ -27,14 +27,9 @@ begin
 end
 $$;
 
-alter role miayaar_app
-  login
-  nosuperuser
-  nocreatedb
-  nocreaterole
-  noinherit
-  noreplication
-  nobypassrls;
+-- Supabase's migration executor can create this absent role but cannot later
+-- alter platform-managed role attributes. The guarded CREATE ROLE above is the
+-- single source of the approved restricted attributes for this rollout.
 
 grant usage on schema public to miayaar_app;
 

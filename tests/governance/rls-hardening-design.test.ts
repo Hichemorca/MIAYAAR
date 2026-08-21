@@ -114,6 +114,7 @@ describe("RLS hardening design", () => {
     expect(migration).not.toMatch(/grant\s+all\s+privileges/i);
     expect(migration).not.toMatch(/grant\s+.*dldImportIssues.*miayaar_app/i);
     expect(executableSql).not.toMatch(/alter\s+default\s+privileges/i);
+    expect(executableSql).not.toMatch(/alter\s+role\s+miayaar_app/i);
     expect(migration).not.toMatch(/alter\s+role\s+postgres/i);
   });
 
