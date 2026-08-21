@@ -66,4 +66,11 @@
 - [x] Comparable Selection: implement the deterministic selection service with per-record exclusion explanations, isolated from Market Intelligence and confidence.
 - [x] Comparable Selection: cover eligibility, ranking, exclusion reasoning, determinism, and non-interference with regression tests.
 - [x] Comparable Selection: verify locally (type check, Vitest, build, format, git diff --check), open a pull request, and confirm GitHub CI and Netlify Deploy Preview.
-- [ ] Comparable Selection: report implementation results to the owner and await the next decision without starting a new phase automatically.
+- [x] Comparable Selection: report implementation results to the owner and await the next decision without starting a new phase automatically.
+- [x] Comparable Selection: verify the merged PR #48 commit, main CI, and production deployment identity before closing the phase record.
+- [x] Roadmap: review the official phase-status map after Comparable Selection closure and present the next owner-gated scope without starting it automatically.
+- [ ] Confidence & Explainability Policy Gate: inventory current confidence, valuation-report, Evidence Integrity, and Market Intelligence outputs without modifying code, contracts, APIs, or UI.
+- [x] Confidence & Explainability Policy Gate: inventory current confidence, valuation-report, Evidence Integrity, and Market Intelligence outputs without modifying code, contracts, APIs, or UI.
+- [x] Confidence & Explainability Policy Gate: document permitted facts, source boundaries, presentation distinctions, and all unresolved decisions without creating a new confidence score or threshold.
+- [ ] Confidence & Explainability Policy Gate: verify the documentation, open a documentation-only pull request, and confirm CI and Netlify Deploy Preview.
+- [ ] Confidence & Explainability Policy Gate: report the policy-gate outcome and await a separately approved implementation scope.
