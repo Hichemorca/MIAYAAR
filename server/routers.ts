@@ -1,11 +1,14 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { executeValuation } from "./engines/orchestrator/valuation-orchestrator";
 import { EvidenceIntegrityService } from "../engines/evidence-integrity/evidence-integrity.service";
 import { DldEvidenceIntegrityProvider } from "./evidence-integrity/dld-evidence-integrity-provider";
+import { getGovernanceStorageSnapshot } from "./db";
+import { frozenMethodologyV12 } from "../engines/valuation/methodology-v1_2";
+import { frozenMethodologyChecksum } from "./valuation/methodology-registry";
 
 const propertySubmission = z.object({
   propertyType: z.enum([
@@ -108,6 +111,23 @@ export const appRouter = router({
           new DldEvidenceIntegrityProvider()
         ).inspect(input)
       ),
+  }),
+  governance: router({
+    /**
+     * Administrative visibility is intentionally constrained to immutable
+     * methodology facts, persisted release history, DLD provenance, and the
+     * actual property-submission shape. This router has no configuration
+     * mutation because no replacement-release policy exists for v1.2.
+     */
+    overview: adminProcedure.query(async () => ({
+      configuration: {
+        frozenRelease: frozenMethodologyV12,
+        checksum: frozenMethodologyChecksum,
+        propertySubmissionFields: Object.keys(propertySubmission.shape),
+        mutationStatus: "UNRESOLVED_POLICY" as const,
+      },
+      storage: await getGovernanceStorageSnapshot(),
+    })),
   }),
 
   // TODO: add feature routers here, e.g.
