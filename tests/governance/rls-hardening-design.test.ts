@@ -11,6 +11,10 @@ const designPath = path.join(
   repositoryRoot,
   "docs/security/RLS-HARDENING-DESIGN-2026-08-21.md"
 );
+const readinessReviewPath = path.join(
+  repositoryRoot,
+  "docs/security/RLS-READINESS-REVIEW-2026-08-21.md"
+);
 
 const protectedTables = [
   "users",
@@ -50,5 +54,15 @@ describe("RLS hardening design", () => {
     expect(design).toContain("**not applied**");
     expect(design).toContain("explicitly authorize database application");
     protectedTables.forEach(table => expect(design).toContain(`\`${table}\``));
+  });
+
+  test("keeps the readiness review conditional until the deployed server role is evidenced", () => {
+    const readinessReview = readFileSync(readinessReviewPath, "utf8");
+
+    expect(readinessReview).toContain("**CONDITIONAL NO-GO.**");
+    expect(readinessReview).toContain(
+      "runtime role used by the deployed server"
+    );
+    expect(readinessReview).toContain("second explicit owner decision");
   });
 });
