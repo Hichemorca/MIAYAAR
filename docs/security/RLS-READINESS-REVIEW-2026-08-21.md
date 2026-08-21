@@ -143,6 +143,18 @@ observation exists in this record yet. The administrative inspection role must
 not be treated as a substitute for that evidence. No application approval is
 implied by this record.
 
+### 7.1 Subsequent runtime-role evidence update
+
+After this U-006 record was completed, U-007/U-008 observed the production
+Netlify server connection during an attested `main` deployment. The evidence
+reported matching `postgres` effective and session roles, `rolsuper=false`, and
+`rolbypassrls=true`. This satisfies the missing-observation requirement as a
+fact, but it does **not** satisfy the intended RLS-safe access-path outcome:
+the observed role bypasses RLS. The current connection-role assessment,
+least-privilege transition options, and continuing `CONDITIONAL NO-GO` are
+recorded in `docs/security/RLS-CONNECTION-ROLE-STRATEGY-REVIEW-2026-08-21.md`.
+No migration is authorized by this update.
+
 ## References
 
 [1]: `supabase/migrations/20260821190000_enable_rls_application_tables.sql` — proposed, unapplied RLS design  
