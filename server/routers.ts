@@ -6,7 +6,10 @@ import { z } from "zod";
 import { executeValuation } from "./engines/orchestrator/valuation-orchestrator";
 import { EvidenceIntegrityService } from "../engines/evidence-integrity/evidence-integrity.service";
 import { DldEvidenceIntegrityProvider } from "./evidence-integrity/dld-evidence-integrity-provider";
-import { getGovernanceStorageSnapshot } from "./db";
+import {
+  getGovernanceStorageSnapshot,
+  getServerConnectionRoleEvidence,
+} from "./db";
 import { frozenMethodologyV12 } from "../engines/valuation/methodology-v1_2";
 import { frozenMethodologyChecksum } from "./valuation/methodology-registry";
 
@@ -128,6 +131,16 @@ export const appRouter = router({
       },
       storage: await getGovernanceStorageSnapshot(),
     })),
+    admin: router({
+      /**
+       * Runtime role evidence is intentionally read-only and admin-only. The
+       * helper returns a constrained shape that excludes connection details,
+       * credentials, application data, and query text.
+       */
+      connectionRole: adminProcedure.query(() =>
+        getServerConnectionRoleEvidence()
+      ),
+    }),
   }),
 
   // TODO: add feature routers here, e.g.

@@ -85,6 +85,12 @@ function GovernanceContent() {
   const overview = trpc.governance.overview.useQuery(undefined, {
     enabled: user?.role === "admin",
   });
+  const connectionRole = trpc.governance.admin.connectionRole.useQuery(
+    undefined,
+    {
+      enabled: user?.role === "admin",
+    }
+  );
 
   if (user?.role !== "admin") return <GovernanceAccessDenied />;
   if (overview.isLoading) return <GovernanceLoading />;
@@ -108,6 +114,11 @@ function GovernanceContent() {
 
   const { configuration, storage } = overview.data;
   const release = configuration.frozenRelease;
+  const roleEvidence = connectionRole.data;
+  const roleEvidenceUnavailable =
+    connectionRole.isError ||
+    !roleEvidence ||
+    roleEvidence.status === "UNAVAILABLE";
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-10">
@@ -158,6 +169,77 @@ function GovernanceContent() {
           description="Transaction date, not a technical audit time"
         />
       </section>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                Server connection role
+              </CardTitle>
+              <CardDescription>
+                Read-only runtime evidence from the deployed server connection.
+                Connection strings, credentials, hosts, and application data are
+                not exposed.
+              </CardDescription>
+            </div>
+            <Badge
+              variant={roleEvidenceUnavailable ? "secondary" : "outline"}
+            >
+              {roleEvidenceUnavailable ? "Evidence unavailable" : "Observed"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {connectionRole.isLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <Skeleton className="h-20 rounded-xl" />
+              <Skeleton className="h-20 rounded-xl" />
+              <Skeleton className="h-20 rounded-xl" />
+              <Skeleton className="h-20 rounded-xl" />
+            </div>
+          ) : roleEvidenceUnavailable ? (
+            <p className="rounded-lg bg-muted/60 p-3 text-sm leading-6 text-muted-foreground">
+              Evidence unavailable. No role attributes could be observed from
+              the current server connection, and no configuration change was
+              attempted.
+            </p>
+          ) : (
+            <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-xl border border-border/70 p-4">
+                <p className="text-muted-foreground">Effective role</p>
+                <p className="mt-1 break-all font-mono text-sm font-medium">
+                  {roleEvidence.effectiveRole}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border/70 p-4">
+                <p className="text-muted-foreground">Session role</p>
+                <p className="mt-1 break-all font-mono text-sm font-medium">
+                  {roleEvidence.sessionRole}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border/70 p-4">
+                <p className="text-muted-foreground">Role alignment</p>
+                <p className="mt-1 font-medium">
+                  {roleEvidence.effectiveRoleMatchesSessionRole
+                    ? "Matches"
+                    : "Differs"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border/70 p-4">
+                <p className="text-muted-foreground">Role attributes</p>
+                <p className="mt-1 font-medium">
+                  Superuser: {roleEvidence.isSuperuser ? "Yes" : "No"}
+                </p>
+                <p className="text-muted-foreground">
+                  Bypasses RLS: {roleEvidence.bypassesRls ? "Yes" : "No"}
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <Card>
