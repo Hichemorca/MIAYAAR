@@ -61,3 +61,9 @@
 - [x] Verify the merged PR #46 production deployment and confirm the first Netlify deploy-attestation MATCH operational record without changing runtime behavior or configuration.
 - [x] Review the official roadmap state after Core Types Freeze closure and post-merge stability verification; identify the next owner-gated phase without starting implementation.
 - [x] Review Phase 2 Data Pipeline & Classification: inventory the DLD evidence contract, cleaning and classification flow, and no-inference safeguards; document governed gaps without modifying product logic or data sources.
+- [x] Comparable Selection: inventory the existing comparable-search module, valuation contracts, and Market Intelligence boundary to define the governed scope without changing methodology, weights, engine, Core Types, or the public API.
+- [x] Comparable Selection: document the selection hierarchy and per-record exclusion reasoning as governed policy, recording every unspecified rule as UNRESOLVED_POLICY.
+- [x] Comparable Selection: implement the deterministic selection service with per-record exclusion explanations, isolated from Market Intelligence and confidence.
+- [x] Comparable Selection: cover eligibility, ranking, exclusion reasoning, determinism, and non-interference with regression tests.
+- [x] Comparable Selection: verify locally (type check, Vitest, build, format, git diff --check), open a pull request, and confirm GitHub CI and Netlify Deploy Preview.
+- [ ] Comparable Selection: report implementation results to the owner and await the next decision without starting a new phase automatically.
