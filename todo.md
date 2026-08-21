@@ -83,4 +83,8 @@
 - [x] Temporal Backtesting Governance Review: inventory the current read-only backtesting protocol, historical harness, results, and source boundaries without running a new study or modifying operational code.
 - [x] Temporal Backtesting Governance Review: reconcile the historical comparable-selection replay with CS-v1.0, documenting alignment, divergence, and all unresolved policy decisions without inventing rules.
 - [x] Temporal Backtesting Governance Review: write and validate a documentation-only policy-gate record, open a pull request, and confirm CI and Netlify Deploy Preview.
-- [ ] Temporal Backtesting Governance Review: report the outcome and await a separately approved implementation scope.
+- [x] Temporal Backtesting Governance Review: report the outcome and await a separately approved implementation scope.
+- [x] API Surface Reconciliation: inventory public procedures, Netlify entry points, authorization posture, rate-limit boundaries, response contracts, and deployed-path evidence without changing operational code.
+- [x] API Surface Reconciliation: reconcile public endpoints against the approved boundaries for valuation, Evidence Integrity, Market Intelligence, Comparable Selection, Forensic Diagnostics, and Temporal Backtesting; preserve every unapproved exposure as UNRESOLVED_POLICY.
+- [x] API Surface Reconciliation: write and validate a documentation-only governance record, open a pull request, and confirm CI and Netlify Deploy Preview.
+- [ ] API Surface Reconciliation: report the outcome and await a separately approved implementation scope.
