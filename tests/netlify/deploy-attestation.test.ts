@@ -4,6 +4,7 @@ import eventFunction, {
   MIAYAAR_NETLIFY_SITE_ID,
   PRODUCTION_BUILD_STAMP_URL,
   attestProductionDeploy,
+  observeProductionServerConnectionRole,
 } from "../../netlify/functions/deploy-attestation";
 
 const productionStamp = {
@@ -172,6 +173,67 @@ describe("MIAYAAR Netlify deploy attestation event", () => {
     expect(malformedContract.outcome).toBe("MALFORMED_STAMP");
   });
 
+  test("observes only non-secret runtime role attributes for a production-main deployment", async () => {
+    const observeRole = vi.fn().mockResolvedValue({
+      status: "OBSERVED" as const,
+      effectiveRole: "service_role",
+      sessionRole: "service_role",
+      effectiveRoleMatchesSessionRole: true,
+      isSuperuser: false,
+      bypassesRls: true,
+    });
+
+    const result = await observeProductionServerConnectionRole(
+      deployEvent(),
+      observeRole
+    );
+
+    expect(result).toEqual({
+      schemaVersion: "MIAYAAR-SERVER-CONNECTION-ROLE-1",
+      outcome: "OBSERVED",
+      deployId: "deploy-123",
+      siteId: MIAYAAR_NETLIFY_SITE_ID,
+      expectedCommitRef: productionStamp.commitRef,
+      effectiveRole: "service_role",
+      sessionRole: "service_role",
+      effectiveRoleMatchesSessionRole: true,
+      isSuperuser: false,
+      bypassesRls: true,
+    });
+    expect(JSON.stringify(result)).not.toContain("DATABASE_URL");
+    expect(JSON.stringify(result)).not.toContain("postgresql://");
+  });
+
+  test("does not observe the runtime role outside a signed production-main deployment", async () => {
+    const observeRole = vi.fn();
+
+    const result = await observeProductionServerConnectionRole(
+      deployEvent({ context: "deploy-preview" }),
+      observeRole
+    );
+
+    expect(result.outcome).toBe("IGNORED_NON_PRODUCTION_MAIN");
+    expect(observeRole).not.toHaveBeenCalled();
+  });
+
+  test("records an unavailable role observation without leaking the query failure", async () => {
+    const result = await observeProductionServerConnectionRole(
+      deployEvent(),
+      async () => {
+        throw new Error("connection unavailable");
+      }
+    );
+
+    expect(result).toMatchObject({
+      outcome: "UNAVAILABLE",
+      effectiveRole: null,
+      sessionRole: null,
+      isSuperuser: null,
+      bypassesRls: null,
+    });
+    expect(JSON.stringify(result)).not.toContain("connection unavailable");
+  });
+
   test("writes one non-secret operational record when Netlify invokes the verified event handler", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
@@ -182,9 +244,12 @@ describe("MIAYAAR Netlify deploy attestation event", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(PRODUCTION_BUILD_STAMP_URL);
-    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledTimes(2);
     expect(info.mock.calls[0]?.[0]).toBe("[Deploy attestation]");
     expect(info.mock.calls[0]?.[1]).toContain('"outcome":"MATCH"');
     expect(info.mock.calls[0]?.[1]).not.toContain("DATABASE_URL");
+    expect(info.mock.calls[1]?.[0]).toBe("[Server connection role evidence]");
+    expect(info.mock.calls[1]?.[1]).toContain('"outcome":"UNAVAILABLE"');
+    expect(info.mock.calls[1]?.[1]).not.toContain("DATABASE_URL");
   });
 });
