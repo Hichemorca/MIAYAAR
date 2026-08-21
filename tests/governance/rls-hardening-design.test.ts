@@ -27,6 +27,10 @@ const applicationRolePackagePath = path.join(
   repositoryRoot,
   "docs/security/RLS-APPLICATION-ROLE-IMPLEMENTATION-PACKAGE-2026-08-21.md"
 );
+const rolloutRecordPath = path.join(
+  repositoryRoot,
+  "docs/security/RLS-U010-ROLLOUT-RECORD-2026-08-21.md"
+);
 
 const protectedTables = [
   "users",
@@ -140,5 +144,16 @@ describe("RLS hardening design", () => {
     expect(implementationPackage).toContain("DLD ingestion script is intentionally out of scope");
     expect(implementationPackage).toContain("Do **not** drop");
     expect(implementationPackage).not.toMatch(/postgres(?:ql)?:\/\//i);
+  });
+
+  test("records the applied controls and the owner-accepted temporary LOGIN exception", () => {
+    const rolloutRecord = readFileSync(rolloutRecordPath, "utf8");
+
+    expect(rolloutRecord).toContain("APPLIED WITH OWNER-ACCEPTED TEMPORARY EXCEPTION");
+    expect(rolloutRecord).toContain("`rolbypassrls=false`");
+    expect(rolloutRecord).toContain("No direct table privilege remains for `anon` or `authenticated`");
+    expect(rolloutRecord).toContain("`LOGIN` with `PASSWORD NULL`");
+    expect(rolloutRecord).toContain("correction to `NOLOGIN` requires");
+    expect(rolloutRecord).toContain("`DATABASE_URL` continues to use the");
   });
 });
