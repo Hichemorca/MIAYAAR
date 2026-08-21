@@ -107,3 +107,6 @@
 - [x] Final Platform Build: add procedure-level authorization coverage proving that governance facts are available to the persisted administrator role only and that the read model tolerates unavailable storage.
 - [x] Final Platform Build: reconcile the property-type and method-aware UI requirements against the frozen submission contract; retain the existing contract-aligned field set and record conditional input behavior as UNRESOLVED rather than inferring rules.
 - [x] Final Platform Build: present existing server-returned confidence facts and decision trace in the canonical valuation report; add no Market Intelligence, Comparable Selection, Forensic, or Temporal API/UI surface.
+- [x] Post-merge: verify PR #54 merge record, mandatory main CI, and production deployment identity without modifying runtime behavior or Supabase.
+- [ ] Roadmap: review the official phase-status map after PR #54 closure and present the next owner-gated scope without starting implementation automatically.
+- [x] U-006 RLS readiness review: inspect table ownership, grants, policies, and migration impact in read-only mode; document a conditional no-go, runtime-role evidence requirement, rollback steps, and post-application verification without applying any database change.
