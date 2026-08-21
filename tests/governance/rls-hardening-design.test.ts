@@ -19,6 +19,14 @@ const connectionRoleStrategyPath = path.join(
   repositoryRoot,
   "docs/security/RLS-CONNECTION-ROLE-STRATEGY-REVIEW-2026-08-21.md"
 );
+const applicationRoleMigrationPath = path.join(
+  repositoryRoot,
+  "supabase/migrations/20260821200000_prepare_least_privilege_application_role_and_rls.sql"
+);
+const applicationRolePackagePath = path.join(
+  repositoryRoot,
+  "docs/security/RLS-APPLICATION-ROLE-IMPLEMENTATION-PACKAGE-2026-08-21.md"
+);
 
 const protectedTables = [
   "users",
@@ -82,5 +90,47 @@ describe("RLS hardening design", () => {
     expect(strategy).toContain("**Only eligible design direction.**");
     expect(strategy).toContain("must **not** be applied as a stand-alone step");
     expect(strategy).toContain("No technical implementation should start automatically");
+  });
+
+  test("prepares a non-bypass application role with only reviewed relation privileges", () => {
+    const migration = readFileSync(applicationRoleMigrationPath, "utf8");
+
+    expect(migration).toContain("create role miayaar_app");
+    expect(migration).toContain("nosuperuser");
+    expect(migration).toContain("noinherit");
+    expect(migration).toContain("nobypassrls");
+    expect(migration).toContain("password null");
+    expect(migration).toContain('grant select, insert, update on table public."users" to miayaar_app;');
+    expect(migration).toContain('grant insert on table public."valuationAuditEvents" to miayaar_app;');
+    expect(migration).toContain('grant select on table public."marketTransactions" to miayaar_app;');
+    expect(migration).toContain('grant select on table public."dldImportRuns" to miayaar_app;');
+    expect(migration).toContain('grant usage, select on sequence public."users_id_seq" to miayaar_app;');
+    expect(migration).not.toMatch(/grant\s+all\s+privileges/i);
+    expect(migration).not.toMatch(/grant\s+.*dldImportIssues.*miayaar_app/i);
+    expect(migration).not.toMatch(/alter\s+role\s+postgres/i);
+  });
+
+  test("pairs RLS with explicit server-only policies and preserves the ingestion boundary", () => {
+    const migration = readFileSync(applicationRoleMigrationPath, "utf8");
+
+    protectedTables.forEach(table => {
+      expect(migration).toContain(`alter table public."${table}" enable row level security;`);
+    });
+    expect(migration).toContain('create policy "miayaar_app_users_access"');
+    expect(migration).toContain('create policy "miayaar_app_market_transactions_read"');
+    expect(migration).toContain('create policy "miayaar_app_rate_limit_windows_access"');
+    expect(migration).not.toMatch(/create\s+policy\s+"miayaar_app_dld_import_issues/i);
+    expect(migration).not.toMatch(/force\s+row\s+level\s+security/i);
+  });
+
+  test("documents the staged application and rollback gate without exposing secrets", () => {
+    const implementationPackage = readFileSync(applicationRolePackagePath, "utf8");
+
+    expect(implementationPackage).toContain("**PREPARED / NOT APPLIED.**");
+    expect(implementationPackage).toContain("second explicit\nowner decision");
+    expect(implementationPackage).toContain("`rolbypassrls=false`");
+    expect(implementationPackage).toContain("DLD ingestion script is intentionally out of scope");
+    expect(implementationPackage).toContain("Do **not** drop");
+    expect(implementationPackage).not.toMatch(/postgres(?:ql)?:\/\//i);
   });
 });
