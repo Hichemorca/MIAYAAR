@@ -31,6 +31,10 @@ const rolloutRecordPath = path.join(
   repositoryRoot,
   "docs/security/RLS-U010-ROLLOUT-RECORD-2026-08-21.md"
 );
+const noLoginAdministrativePackagePath = path.join(
+  repositoryRoot,
+  "docs/security/RLS-U010-NOLOGIN-ADMINISTRATIVE-CHANGE-PACKAGE-2026-08-22.md"
+);
 
 const protectedTables = [
   "users",
@@ -155,5 +159,19 @@ describe("RLS hardening design", () => {
     expect(rolloutRecord).toContain("`LOGIN` with `PASSWORD NULL`");
     expect(rolloutRecord).toContain("correction to `NOLOGIN` requires");
     expect(rolloutRecord).toContain("`DATABASE_URL` continues to use the");
+  });
+
+  test("keeps the NOLOGIN correction as a database-administrator-only, single-attribute change", () => {
+    const administrativePackage = readFileSync(noLoginAdministrativePackagePath, "utf8");
+    const executionStatement = administrativePackage.match(
+      /## 4\. Administrative execution SQL — only statement\s+[^`]*```sql\s+([^\n]+)\s+```/m
+    )?.[1];
+
+    expect(executionStatement?.trim()).toBe("ALTER ROLE miayaar_app NOLOGIN;");
+    expect(administrativePackage).toContain("rolcanlogin");
+    expect(administrativePackage).toContain("`rolbypassrls=false`");
+    expect(administrativePackage).toContain("`DATABASE_URL` unchanged");
+    expect(administrativePackage).toContain("Do not invoke `valuation.run`");
+    expect(administrativePackage).toContain("Database Administrator or Supabase Support");
   });
 });
