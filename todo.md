@@ -73,4 +73,10 @@
 - [x] Confidence & Explainability Policy Gate: inventory current confidence, valuation-report, Evidence Integrity, and Market Intelligence outputs without modifying code, contracts, APIs, or UI.
 - [x] Confidence & Explainability Policy Gate: document permitted facts, source boundaries, presentation distinctions, and all unresolved decisions without creating a new confidence score or threshold.
 - [x] Confidence & Explainability Policy Gate: verify the documentation, open a documentation-only pull request, and confirm CI and Netlify Deploy Preview.
-- [ ] Confidence & Explainability Policy Gate: report the policy-gate outcome and await a separately approved implementation scope.
+- [x] Confidence & Explainability Policy Gate: report the policy-gate outcome and await a separately approved implementation scope.
+- [x] Confidence & Explainability Policy Gate: verify merged PR #49 ancestry, main CI, and production deployment identity before closing the policy-gate record.
+- [x] Roadmap: review the official phase-status map after the Phase 6 policy-gate merge and present the next owner-gated scope without starting it automatically.
+- [x] Forensic Diagnostics Policy Gate: inventory existing Evidence Integrity, comparable-selection, confidence, market-context, and public API boundaries without modifying operational code or contracts.
+- [x] Forensic Diagnostics Policy Gate: document the approved facts, prohibited diagnostic claims, candidate policy decisions, and all unresolved items without creating a taxonomy, threshold, score, or rule.
+- [ ] Forensic Diagnostics Policy Gate: verify the documentation, open a documentation-only pull request, and confirm CI and Netlify Deploy Preview.
+- [ ] Forensic Diagnostics Policy Gate: report the policy-gate outcome and await a separately approved implementation scope.
