@@ -65,5 +65,5 @@
 - [x] Comparable Selection: document the selection hierarchy and per-record exclusion reasoning as governed policy, recording every unspecified rule as UNRESOLVED_POLICY.
 - [x] Comparable Selection: implement the deterministic selection service with per-record exclusion explanations, isolated from Market Intelligence and confidence.
 - [x] Comparable Selection: cover eligibility, ranking, exclusion reasoning, determinism, and non-interference with regression tests.
-- [ ] Comparable Selection: verify locally (type check, Vitest, build, format, git diff --check), open a pull request, and confirm GitHub CI and Netlify Deploy Preview.
+- [x] Comparable Selection: verify locally (type check, Vitest, build, format, git diff --check), open a pull request, and confirm GitHub CI and Netlify Deploy Preview.
 - [ ] Comparable Selection: report implementation results to the owner and await the next decision without starting a new phase automatically.
