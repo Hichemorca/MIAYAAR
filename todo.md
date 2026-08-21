@@ -86,5 +86,5 @@
 - [x] Temporal Backtesting Governance Review: report the outcome and await a separately approved implementation scope.
 - [x] API Surface Reconciliation: inventory public procedures, Netlify entry points, authorization posture, rate-limit boundaries, response contracts, and deployed-path evidence without changing operational code.
 - [x] API Surface Reconciliation: reconcile public endpoints against the approved boundaries for valuation, Evidence Integrity, Market Intelligence, Comparable Selection, Forensic Diagnostics, and Temporal Backtesting; preserve every unapproved exposure as UNRESOLVED_POLICY.
-- [ ] API Surface Reconciliation: write and validate a documentation-only governance record, open a pull request, and confirm CI and Netlify Deploy Preview.
+- [x] API Surface Reconciliation: write and validate a documentation-only governance record, open a pull request, and confirm CI and Netlify Deploy Preview.
 - [ ] API Surface Reconciliation: report the outcome and await a separately approved implementation scope.
