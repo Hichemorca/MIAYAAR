@@ -1,3 +1,4 @@
+import React from "react";
 import {
   AlertTriangle,
   BadgeCheck,
@@ -19,6 +20,8 @@ const formatAED = (value?: number) =>
   typeof value === "number"
     ? new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(value)
     : "—";
+
+const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
 
 const titleize = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, letter => letter.toUpperCase());
 
@@ -57,7 +60,10 @@ export default function ValuationReport({ report, requestId, resultSummary }: Va
 
     <EvidenceIntegrityPanel {...evidenceIntegrityContext} autoRequest />
 
+    {report.confidence && <section className="mi-confidence"><div className="section-lead"><span>03</span><h3>Confidence record</h3><p>This is the server-authored confidence assessment. It does not change the value, evidence eligibility, or valuation methodology.</p></div><div className="mi-confidence-card"><div className="mi-confidence-heading"><div><span>Server assessment</span><b>{titleize(report.confidence.level)}</b></div><p>{report.confidence.explanation}</p></div><dl className="mi-confidence-facts"><div><dt>Assessment basis</dt><dd>{titleize(report.confidence.basis)}</dd></div><div><dt>Range width</dt><dd>{formatPercentage(report.confidence.rangeWidthPercent)}</dd></div><div><dt>Comparable count</dt><dd>{report.confidence.evidence.comparableCount}</dd></div><div><dt>Oldest comparable</dt><dd>{report.confidence.evidence.oldestComparableAgeDays} days</dd></div></dl></div></section>}
+
     {report.warnings.length > 0 && <div className="mi-warnings">{report.warnings.map(warning => <p key={warning}><AlertTriangle size={16} />{warning}</p>)}</div>}
+    <section className="mi-decision-trace"><div className="section-lead"><span>04</span><h3>Decision trace</h3><p>A presentation of server-returned facts for this request. It adds no scoring, selection rule, or valuation input.</p></div><dl className="mi-trace-list"><div><dt>Server decision</dt><dd>{titleize(report.status)}</dd></div><div><dt>Evidence query</dt><dd>{report.evidence.search.district} · {titleize(report.evidence.search.propertyType)} · as of {new Date(report.evidence.search.asOf).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} · {report.evidence.search.windowDays}-day window</dd></div><div><dt>Applicable approaches</dt><dd>{valuationResult?.approachResults.map(approach => titleize(approach.approach)).join(" · ") || "No applicable approach was returned."}</dd></div><div><dt>Methodology record</dt><dd>{report.methodology.documentId} · v{report.methodology.version}{requestId ? ` · request ${requestId}` : ""}</dd></div></dl></section>
     <div className="mi-audit"><ClipboardCheck size={22} /><div><b>Decision record</b><p>This request was processed under {report.methodology.documentId} v{report.methodology.version}. The record preserves its evidence gate, rules, applicable approaches, range, and warnings.</p></div><span>{methodCount} methods</span></div>
   </>;
 }

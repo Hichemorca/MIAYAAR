@@ -1,7 +1,8 @@
-import { and, desc, eq, gte, max, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, max, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import {
+  dldImportRuns,
   InsertMethodologyVersion,
   InsertUser,
   marketTransactions,
@@ -138,6 +139,74 @@ export async function upsertMethodologyVersion(record: InsertMethodologyVersion)
       approvedAt: record.approvedAt,
     },
   });
+}
+
+/**
+ * Read-only administrative facts. This deliberately contains no mutation
+ * helper: methodology releases and DLD provenance remain governed by their
+ * canonical server workflows.
+ */
+function unavailableGovernanceStorageSnapshot() {
+  return {
+    available: false as const,
+    methodologyVersions: [],
+    latestImport: undefined,
+    evidence: {
+      eligibleRecords: undefined,
+      rejectedRecords: undefined,
+      latestEligibleTransactionDate: undefined,
+    },
+  };
+}
+
+export async function getGovernanceStorageSnapshot() {
+  const db = await getDb();
+  if (!db) return unavailableGovernanceStorageSnapshot();
+
+  try {
+    const [versions, importRows, eligibleRows, rejectedRows, latestEvidenceRows] = await Promise.all([
+      db
+        .select({
+          version: methodologyVersions.version,
+          status: methodologyVersions.status,
+          documentId: methodologyVersions.documentId,
+          checksum: methodologyVersions.checksum,
+          changeSummary: methodologyVersions.changeSummary,
+          approvedBy: methodologyVersions.approvedBy,
+          approvedAt: methodologyVersions.approvedAt,
+          createdAt: methodologyVersions.createdAt,
+        })
+        .from(methodologyVersions)
+        .orderBy(desc(methodologyVersions.createdAt)),
+      db.select().from(dldImportRuns).orderBy(desc(dldImportRuns.startedAt)).limit(1),
+      db
+        .select({ total: count() })
+        .from(marketTransactions)
+        .where(eq(marketTransactions.evidenceStatus, "eligible")),
+      db
+        .select({ total: count() })
+        .from(marketTransactions)
+        .where(eq(marketTransactions.evidenceStatus, "rejected")),
+      db
+        .select({ latest: max(marketTransactions.transactionDate) })
+        .from(marketTransactions)
+        .where(eq(marketTransactions.evidenceStatus, "eligible")),
+    ]);
+
+    return {
+      available: true as const,
+      methodologyVersions: versions,
+      latestImport: importRows[0],
+      evidence: {
+        eligibleRecords: eligibleRows[0]?.total ?? 0,
+        rejectedRecords: rejectedRows[0]?.total ?? 0,
+        latestEligibleTransactionDate: latestEvidenceRows[0]?.latest,
+      },
+    };
+  } catch (error) {
+    console.warn("[Database] Governance storage snapshot is unavailable:", error);
+    return unavailableGovernanceStorageSnapshot();
+  }
 }
 
 export async function createValuationRequest(record: typeof valuationRequests.$inferInsert): Promise<void> {
