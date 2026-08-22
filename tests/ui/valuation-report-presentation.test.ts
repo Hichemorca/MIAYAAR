@@ -1,8 +1,15 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { getApplicableMethods } from "../../shared/valuation/method-applicability.policy";
 import type { ValuationReport as ValuationReportData } from "../../server/engines/reporting/valuation-report";
 import ValuationReport from "../../client/src/components/ValuationReport";
+import {
+  allValuationMethods,
+  getMethodNotApplicableExplanation,
+  getServerApproachLabel,
+  propertyTypeChoices,
+} from "../../client/src/pages/home-form-config";
 
 vi.mock("../../client/src/components/EvidenceIntegrityPanel", () => ({
   default: () =>
@@ -70,7 +77,7 @@ const report: ValuationReportData = {
 };
 
 describe("ValuationReport presentation", () => {
-  it("renders only the server-authored confidence facts and decision trace", () => {
+  it("renders the practical result sections using server-authored facts and assessments", () => {
     const markup = renderToStaticMarkup(
       createElement(ValuationReport, {
         report,
@@ -79,6 +86,12 @@ describe("ValuationReport presentation", () => {
       })
     );
 
+    expect(markup).toContain("Property summary");
+    expect(markup).toContain("Applicable methods");
+    expect(markup).toContain("Final valuation");
+    expect(markup).toContain("Method results");
+    expect(markup).toContain("Evidence and comparables");
+    expect(markup).toContain("Data limitations");
     expect(markup).toContain("Confidence record");
     expect(markup).toContain("Server assessment");
     expect(markup).toContain("High");
@@ -90,8 +103,66 @@ describe("ValuationReport presentation", () => {
     expect(markup).toContain("BUSINESS BAY");
     expect(markup).toContain("90-day window");
     expect(markup).toContain("Market Comparison");
+    expect(markup).toContain("DLD-1001");
+    expect(markup).toContain("FACT");
+    expect(markup).toContain("ASSESSMENT");
+    expect(markup).toContain("NOT_APPLICABLE");
+    expect(markup).toContain(
+      "Cost Approach is not applicable to Apartment under the governed method policy.",
+    );
     expect(markup).toContain("request request-123");
     expect(markup).not.toContain("Client-side confidence");
     expect(markup).not.toContain("synthetic valuation");
+  });
+
+  it("renders policy-derived applicable and not-applicable methods for every governed property type", () => {
+    propertyTypeChoices.forEach(({ value: propertyType }) => {
+      const markup = renderToStaticMarkup(
+        createElement(ValuationReport, {
+          report: { ...report, property: { ...report.property, propertyType } },
+          requestId: `request-${propertyType}`,
+          resultSummary: "Server result",
+        }),
+      );
+      const applicable = getApplicableMethods(propertyType);
+
+      applicable.forEach(method => {
+        expect(markup).toContain(getServerApproachLabel(method));
+      });
+      allValuationMethods
+        .filter(method => !applicable.includes(method))
+        .forEach(method => {
+          expect(markup).toContain(getMethodNotApplicableExplanation(propertyType, method));
+        });
+    });
+  });
+
+  it("renders unavailable evidence without constructing a valuation, comparable, or confidence assessment", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ValuationReport, {
+        report: {
+          ...report,
+          status: "rejected",
+          evidence: {
+            status: "unavailable",
+            search: report.evidence.search,
+            availableCount: 2,
+            requiredCount: 5,
+          },
+          valuation: undefined,
+          confidence: undefined,
+          warnings: ["Insufficient eligible local evidence."],
+        },
+        requestId: "request-unavailable",
+        resultSummary: "Server result",
+      }),
+    );
+
+    expect(markup).toContain("UNAVAILABLE");
+    expect(markup).toContain("The server returned 2 eligible local records; the report requires 5.");
+    expect(markup).toContain("Insufficient eligible local evidence.");
+    expect(markup).not.toContain("Final valuation");
+    expect(markup).not.toContain("DLD-1001");
+    expect(markup).not.toContain("Server assessment");
   });
 });
