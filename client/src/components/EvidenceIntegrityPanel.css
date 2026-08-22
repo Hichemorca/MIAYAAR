@@ -159,6 +159,24 @@
   margin: 12px 0 0 !important;
   max-width: 690px;
 }
+.ei-scope-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.ei-scope-facts span {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.ei-scope-facts b {
+  color: var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .ei-metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -245,6 +263,27 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 8px;
 }
+.ei-limitations {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.ei-limitations p {
+  margin: 0 0 0.4rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+.ei-limitations ul {
+  margin: 0.65rem 0 0;
+  padding-left: 1.1rem;
+}
+.ei-limitations li + li {
+  margin-top: 0.25rem;
+}
 @media (max-width: 640px) {
   .ei-heading,
   .ei-result-title {
@@ -265,6 +304,9 @@
   }
   .ei-metrics {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .ei-scope-facts {
+    grid-template-columns: 1fr;
   }
   .ei-result {
     padding: 14px;

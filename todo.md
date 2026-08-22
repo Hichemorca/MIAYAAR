@@ -161,5 +161,8 @@
 - [x] Phase 6 Market Intelligence: add available/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.
 - [x] Phase 7 Comparable Selection: render server-returned selected and excluded comparable records as a read-only report surface without changing selection policy, ranking, criteria, or fallbacks.
 - [x] Phase 7 Comparable Selection: distinguish selected, excluded, and unavailable states using contract-supported property reference, location, type, transaction facts, count, and exclusion reasons only.
-- [ ] Phase 7 Comparable Selection: add selected/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.
+- [x] Phase 7 Comparable Selection: add selected/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.
 - [x] Phase 7 Comparable Selection: add the approved read-only `comparableSelection.preview` server adapter for DLD candidates using district, propertyType, areaSqm, and asOf only, then pass those records unchanged into CS-v1.0.
+- [x] Phase 8 Evidence Integrity: render the existing server-returned evidence-integrity report as a read-only report surface without creating confidence, diagnostics, or valuation effects.
+- [x] Phase 8 Evidence Integrity: distinguish contract-supported available, insufficient, and unavailable evidence states with eligible-record count, governed date window, DLD source, and explicit evidence limits only.
+- [x] Phase 8 Evidence Integrity: add available/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.
