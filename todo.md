@@ -139,4 +139,4 @@
 - [x] Methodology §4–§5 implementation: enforce only the extracted required-field rules in the public valuation validation path and retain non-applicable versus missing-data semantics explicitly.
 - [x] Methodology §4–§5 implementation: update the English valuation UI to show or hide only methods and inputs explicitly governed by §§4–§5, without inventing conditional behaviour.
 - [x] Methodology §4–§5 implementation: add regression and integration tests for every property type, method availability, approved weight set, required-field failure, and UI visibility state; run quality gates.
-- [ ] Methodology §4–§5 delivery: commit the approved scope, open the pull request, and record its automated-review status.
+- [x] Methodology §4–§5 delivery: commit the approved scope and open pull request #67; automated checks are to be recorded from the pull-request status.
