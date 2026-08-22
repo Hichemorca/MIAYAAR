@@ -29,6 +29,15 @@ vi.mock("../../client/src/components/MarketIntelligencePanel", () => ({
     ),
 }));
 
+vi.mock("../../client/src/components/ComparableSelectionPanel", () => ({
+  default: () =>
+    createElement(
+      "aside",
+      { "data-testid": "comparable-selection" },
+      "Comparable Selection"
+    ),
+}));
+
 const report: ValuationReportData = {
   status: "completed",
   methodology: { documentId: "VALUATION-METHODOLOGY", version: "1.2" },

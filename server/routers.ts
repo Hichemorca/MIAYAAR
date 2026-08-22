@@ -8,6 +8,7 @@ import { EvidenceIntegrityService } from "../engines/evidence-integrity/evidence
 import { DldEvidenceIntegrityProvider } from "./evidence-integrity/dld-evidence-integrity-provider";
 import { MarketIntelligenceService } from "../engines/market-intelligence/market-intelligence.service";
 import { DldMarketIntelligenceProvider } from "./market-intelligence/dld-market-intelligence-provider";
+import { DldComparableSelectionPreviewService } from "./comparable-selection/dld-comparable-selection-preview";
 import {
   getGovernanceStorageSnapshot,
   getServerConnectionRoleEvidence,
@@ -106,6 +107,27 @@ const marketIntelligenceBenchmarkRequest = z
   })
   .strict();
 
+/**
+ * Read-only presentation input for the approved DLD candidate adapter. The
+ * existing CS-v1.0 service alone determines selection and exclusion outcomes.
+ */
+const comparableSelectionPreviewRequest = z
+  .object({
+    district: z.string().trim().min(1).max(160),
+    propertyType: z.enum([
+      "apartment",
+      "villa",
+      "townhouse",
+      "office",
+      "retail",
+      "land",
+      "warehouse",
+    ]),
+    areaSqm: z.number().positive(),
+    asOf: z.coerce.date(),
+  })
+  .strict();
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -150,6 +172,18 @@ export const appRouter = router({
         new MarketIntelligenceService(
           new DldMarketIntelligenceProvider()
         ).getBenchmark(input)
+      ),
+  }),
+  comparableSelection: router({
+    /**
+     * Read-only presentation access to the DLD-backed candidate adapter.
+     * It calls CS-v1.0 unchanged and neither influences valuation nor applies
+     * an ungoverned candidate, ranking, or fallback rule.
+     */
+    preview: publicProcedure
+      .input(comparableSelectionPreviewRequest)
+      .query(({ input }) =>
+        new DldComparableSelectionPreviewService().preview(input)
       ),
   }),
   governance: router({
