@@ -21,6 +21,7 @@ import type { PropertySubmission } from "@shared/valuation/contracts";
 import { getApplicableMethods, type ValuationMethod } from "@shared/valuation/method-applicability.policy";
 import { trpc } from "@/lib/trpc";
 import {
+  clearInapplicableEconomicInputs,
   getApplicableMethodFields,
   getVisibleEconomicFields,
   propertyTypeChoices,
@@ -28,6 +29,7 @@ import {
   toggleViewSelection,
   viewChoices,
 } from "./home-form-config";
+import "./property-input-workflow.css";
 
 const LazyValuationReport = lazy(() => import("@/components/ValuationReport"));
 
@@ -116,16 +118,8 @@ export default function Home() {
   }
 
   function updatePropertyType(propertyType: PropertySubmission["propertyType"]) {
-    const visibleFields = getVisibleEconomicFields(propertyType);
     setInputMessage(null);
-    setForm(current => ({
-      ...current,
-      propertyType,
-      annualRentAed: visibleFields.includes("annualRentAed") ? current.annualRentAed : undefined,
-      replacementCostPerSqm: visibleFields.includes("replacementCostPerSqm") ? current.replacementCostPerSqm : undefined,
-      landValueAed: undefined,
-      depreciationFactor: visibleFields.includes("depreciationFactor") ? current.depreciationFactor : undefined,
-    }));
+    setForm(current => clearInapplicableEconomicInputs(current, propertyType));
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -195,28 +189,31 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mi-input-grid mi-input-grid-rebuild">
-              <fieldset><legend><Building2 size={17} />Identity & location</legend>
+            <div className="mi-input-workflow">
+              <fieldset className="mi-input-section mi-identification"><legend><Building2 size={17} />Property identification</legend>
+                <p className="fieldset-note">Identify the asset with the three public submission facts required for the sales-comparison path when that path applies.</p>
                 <SelectField label="Property type" value={form.propertyType} onChange={value => updatePropertyType(value as PropertySubmission["propertyType"])}>{propertyTypeChoices.map(choice => <option value={choice.value} key={choice.value}>{choice.label}</option>)}</SelectField>
-                <label className="mi-field"><span>District</span><input className="mi-text-input" value={form.district} maxLength={160} placeholder="Enter the recorded district" onChange={event => update("district", event.target.value)} aria-label="District" /><small className="mi-field-hint">MIAYAAR does not provide a district catalogue or normalize this entry in the client.</small></label>
-                <div className="mi-fields-two"><NumberField label="Internal area" value={form.areaSqm || undefined} onChange={value => update("areaSqm", value ?? 0)} suffix="sqm" min={0} hint="Required" /><NumberField label="Bedrooms" value={form.bedrooms} onChange={value => update("bedrooms", value)} suffix="rooms" min={0} max={20} optional /></div>
-                <NumberField label="Year built" value={form.yearBuilt} onChange={value => update("yearBuilt", value)} suffix="year" min={1800} max={2100} optional />
+                <label className="mi-field"><span>Location / district</span><input className="mi-text-input" value={form.district} maxLength={160} placeholder="Enter the recorded district" onChange={event => update("district", event.target.value)} aria-label="Location / district" /><small className="mi-field-hint">MIAYAAR does not provide a district catalogue or normalize this entry in the client.</small></label>
+                <NumberField label="Area" value={form.areaSqm || undefined} onChange={value => update("areaSqm", value ?? 0)} suffix="sqm" min={0} hint="Required" />
               </fieldset>
 
-              <fieldset><legend><SlidersHorizontal size={17} />Property characteristics</legend>
-                <div className="mi-fields-two"><SelectField label="Unit condition" value={form.condition} onChange={value => update("condition", value as PropertySubmission["condition"])}>{["excellent", "good", "fair", "needs_renovation"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField><SelectField label="Building condition" value={form.buildingCondition} onChange={value => update("buildingCondition", value as PropertySubmission["buildingCondition"])}>{["excellent", "well_maintained", "fair", "old_needs_renovation"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField></div>
+              <fieldset className="mi-input-section mi-characteristics"><legend><SlidersHorizontal size={17} />Property characteristics</legend>
+                <p className="fieldset-note">These are existing property-file facts. They remain distinct from method-required economic inputs and are not inferred by the client.</p>
+                <div className="mi-fields-two"><SelectField label="Condition" value={form.condition} onChange={value => update("condition", value as PropertySubmission["condition"])}>{["excellent", "good", "fair", "needs_renovation"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField><SelectField label="Building condition" value={form.buildingCondition} onChange={value => update("buildingCondition", value as PropertySubmission["buildingCondition"])}>{["excellent", "well_maintained", "fair", "old_needs_renovation"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField></div>
                 <ViewPicker value={form.views} onChange={value => update("views", value)} />
-                <div className="mi-fields-two"><SelectField label="Finish quality" value={form.finish} onChange={value => update("finish", value as PropertySubmission["finish"])}>{["luxury", "good", "normal", "basic", "poor"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField><SelectField label="Furnishing" value={form.furnished ?? ""} optional onChange={value => update("furnished", (value || undefined) as PropertySubmission["furnished"])}><option value="">Not recorded</option>{["furnished", "semi_furnished", "unfurnished"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField></div>
                 <div className="mi-fields-two"><SelectField label="Floor" value={form.floor ?? ""} optional onChange={value => update("floor", (value || undefined) as PropertySubmission["floor"])}><option value="">Not recorded</option>{["penthouse", "very_high", "high", "mid", "low", "ground"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField><SelectField label="Street position" value={form.streetPosition ?? ""} optional onChange={value => update("streetPosition", (value || undefined) as PropertySubmission["streetPosition"])}><option value="">Not recorded</option>{["main_street", "corner_plot", "secondary_street", "quiet_street"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField></div>
+                <div className="mi-fields-two"><SelectField label="Finish" value={form.finish} onChange={value => update("finish", value as PropertySubmission["finish"])}>{["luxury", "good", "normal", "basic", "poor"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField><SelectField label="Furnished status" value={form.furnished ?? ""} optional onChange={value => update("furnished", (value || undefined) as PropertySubmission["furnished"])}><option value="">Not recorded</option>{["furnished", "semi_furnished", "unfurnished"].map(value => <option key={value} value={value}>{titleize(value)}</option>)}</SelectField></div>
+                <div className="mi-fields-two"><NumberField label="Year built" value={form.yearBuilt} onChange={value => update("yearBuilt", value)} suffix="year" min={1800} max={2100} optional /><NumberField label="Bedrooms" value={form.bedrooms} onChange={value => update("bedrooms", value)} suffix="rooms" min={0} max={20} optional /></div>
+                <div className="mi-absence-note"><Ruler size={15} /><span>GIS is not shown because it is not a field in the public submission contract. Area is recorded above; no duplicate size or derived age input is created.</span></div>
               </fieldset>
 
-              <fieldset><legend><BarChart3 size={17} />Declared economic inputs <CircleHelp size={15} /></legend>
-                <p className="fieldset-note">Inputs are shown only when their approach applies to the selected type. The server verifies required supplied values; the client does not create an approach, value, or adjustment.</p>
-                {visibleEconomicFields.includes("annualRentAed") && <NumberField label="Annual rent" value={form.annualRentAed} onChange={value => update("annualRentAed", value)} suffix="AED" step={5000} optional />}
-                {visibleEconomicFields.includes("replacementCostPerSqm") && <NumberField label="Replacement cost" value={form.replacementCostPerSqm} onChange={value => update("replacementCostPerSqm", value)} suffix="AED/sqm" step={100} optional />}
-                {visibleEconomicFields.includes("depreciationFactor") && <NumberField label="Depreciation factor" value={form.depreciationFactor} onChange={value => update("depreciationFactor", value)} suffix="ratio" step={0.01} optional hint="Validated by the server" />}
+              <fieldset className="mi-input-section mi-economic"><legend><BarChart3 size={17} />Economic inputs <CircleHelp size={15} /></legend>
+                <p className="fieldset-note">Inputs are shown only when their approach applies to the selected type. The server verifies supplied values; the client does not create an approach, value, or adjustment.</p>
+                {visibleEconomicFields.includes("annualRentAed") && <NumberField label="Annual rent" value={form.annualRentAed} onChange={value => update("annualRentAed", value)} suffix="AED" step={5000} optional hint="Income capitalization" />}
+                {visibleEconomicFields.includes("replacementCostPerSqm") && <NumberField label="Replacement cost" value={form.replacementCostPerSqm} onChange={value => update("replacementCostPerSqm", value)} suffix="AED/sqm" step={100} optional hint="Cost approach" />}
+                {visibleEconomicFields.includes("depreciationFactor") && <NumberField label="Depreciation factor" value={form.depreciationFactor} onChange={value => update("depreciationFactor", value)} suffix="ratio" step={0.01} optional hint="Cost approach · validated by the server" />}
                 {applicableMethods.includes("dcf") && <p className="fieldset-note">DCF is applicable for this type, but its governed engine inputs are not exposed by this public submission contract; the server will not manufacture them.</p>}
-                <div className="mi-absence-note"><Ruler size={15} /><span>Project, legal rights, zoning, hospitality, and secondary-attribute inputs are not shown because no governed UI contract currently supports them.</span></div>
+                <div className="mi-absence-note"><Ruler size={15} /><span>Land value is retained in the contract but is not rendered: the current §4–§5 policy maps it to no public method input. It is not a missing-data field.</span></div>
               </fieldset>
             </div>
             {(inputMessage || valuation.error) && <div className="mi-error" role="alert"><AlertTriangle size={17} />{inputMessage ?? "We could not complete this valuation. Review the supplied data and try again."}</div>}

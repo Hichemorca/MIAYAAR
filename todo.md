@@ -144,3 +144,6 @@
 - [x] Documentation audit: compare README history and its present coverage with the merged project phases; report which earlier changes were documented and which remain absent without extending product scope.
 - [x] Documentation: create a Project History Documentation Index that maps merged PRs #2–#67 to their implementation milestones, authoritative documentation, and governance or verification records.
 - [x] UI applicability matrix: render only policy-applicable methods and supported fields for Apartment, Villa, Townhouse, Office, Retail, Land, and Warehouse; preserve NOT_APPLICABLE distinct from MISSING_DATA; add coverage tests, verify each type visually, and provide one screenshot per type.
+- [x] Phase 2 input workflow: rebuild the valuation input surface into Property Identification, Property Characteristics, and Economic Inputs using existing governed fields only.
+- [x] Phase 2 input workflow: show applicable property characteristics and economic inputs exclusively from the existing policy and contract, and clear no-longer-valid entries when property type changes.
+- [x] Phase 2 input workflow: add seven-type visibility and invalid-input-clearing regression coverage, record visual verification, run quality gates, and open one pull request.

@@ -1,0 +1,104 @@
+.mi-input-workflow {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.84fr) minmax(380px, 1.5fr) minmax(
+      230px,
+      0.98fr
+    );
+  border-top: 1px solid #c9c5bb;
+}
+
+.mi-input-section {
+  min-width: 0;
+  margin: 0;
+  padding: 28px 22px 30px;
+  border: 0;
+  border-right: 1px solid #d4d0c7;
+}
+
+.mi-input-section:first-child {
+  padding-left: 0;
+}
+
+.mi-input-section:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.mi-input-section legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mi-input-section legend svg {
+  color: var(--verdigris);
+}
+
+.mi-identification {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.26),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+.mi-characteristics {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.mi-economic .fieldset-note {
+  min-height: 54px;
+}
+
+@media (max-width: 1120px) {
+  .mi-input-workflow {
+    grid-template-columns: minmax(240px, 0.84fr) minmax(390px, 1.16fr);
+  }
+
+  .mi-economic {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(220px, 0.84fr) minmax(0, 1.16fr);
+    column-gap: 22px;
+    border-top: 1px solid #d4d0c7;
+  }
+
+  .mi-economic legend,
+  .mi-economic > .fieldset-note,
+  .mi-economic > .mi-absence-note {
+    grid-column: 1 / -1;
+  }
+
+  .mi-economic > .mi-field,
+  .mi-economic > .mi-fields-two {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 940px) {
+  .mi-input-workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .mi-input-section,
+  .mi-input-section:first-child,
+  .mi-input-section:last-child {
+    display: block;
+    margin: 0;
+    padding: 25px 0;
+    border-right: 0;
+    border-bottom: 1px solid #d4d0c7;
+  }
+
+  .mi-input-section:last-child {
+    border-bottom: 0;
+  }
+
+  .mi-economic .fieldset-note {
+    min-height: 0;
+  }
+}

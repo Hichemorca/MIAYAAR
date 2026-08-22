@@ -132,6 +132,34 @@ export function getVisibleEconomicFields(
   return typeSpecificFieldRules.find(rule => rule.propertyType === propertyType)?.visibleEconomicFields ?? [];
 }
 
+/**
+ * Keeps only economic values that are supported by an approach applicable to
+ * the next property type. General property facts are intentionally retained:
+ * no approved type-specific rule declares them invalid.
+ */
+export function clearInapplicableEconomicInputs(
+  current: PropertySubmission,
+  propertyType: PropertySubmission["propertyType"],
+): PropertySubmission {
+  const visibleFields = getVisibleEconomicFields(propertyType);
+
+  return {
+    ...current,
+    propertyType,
+    annualRentAed: visibleFields.includes("annualRentAed")
+      ? current.annualRentAed
+      : undefined,
+    replacementCostPerSqm: visibleFields.includes("replacementCostPerSqm")
+      ? current.replacementCostPerSqm
+      : undefined,
+    // This retained contract field has no §4–§5 public-method mapping.
+    landValueAed: undefined,
+    depreciationFactor: visibleFields.includes("depreciationFactor")
+      ? current.depreciationFactor
+      : undefined,
+  };
+}
+
 export function shouldRenderFieldForPropertyType(
   propertyType: PropertySubmission["propertyType"],
   fieldKey: string,
