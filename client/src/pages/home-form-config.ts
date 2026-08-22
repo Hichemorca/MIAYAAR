@@ -1,4 +1,8 @@
 import type { PropertySubmission } from "@shared/valuation/contracts";
+import {
+  getApplicableMethods,
+  type ValuationMethod,
+} from "@shared/valuation/method-applicability.policy";
 
 export const propertyTypeChoices = [
   { value: "apartment", label: "Apartment", description: "Residential unit" },
@@ -57,15 +61,40 @@ export const contractPropertyFields = inputGroups.flatMap(
   group => group.fieldKeys
 );
 
-// The current policy has no approved type-to-field matrix. Keep this empty so
-// the UI cannot silently invent a visibility rule for a property type.
-export const typeSpecificFieldRules: readonly [] = [];
+export const economicFieldMethod = {
+  annualRentAed: "incomeCapitalization",
+  replacementCostPerSqm: "cost",
+  landValueAed: "cost",
+  depreciationFactor: "cost",
+} as const satisfies Readonly<Record<string, ValuationMethod>>;
+
+export type EconomicFieldKey = keyof typeof economicFieldMethod;
+
+/** §4-driven UI visibility: an economic input is visible only with its method. */
+export const typeSpecificFieldRules = propertyTypeChoices.map(({ value }) => ({
+  propertyType: value,
+  applicableMethods: getApplicableMethods(value),
+  visibleEconomicFields: Object.entries(economicFieldMethod)
+    .filter(([, method]) => getApplicableMethods(value).includes(method))
+    .map(([fieldKey]) => fieldKey as EconomicFieldKey),
+})) as readonly {
+  propertyType: PropertySubmission["propertyType"];
+  applicableMethods: readonly ValuationMethod[];
+  visibleEconomicFields: readonly EconomicFieldKey[];
+}[];
+
+export function getVisibleEconomicFields(
+  propertyType: PropertySubmission["propertyType"],
+): readonly EconomicFieldKey[] {
+  return typeSpecificFieldRules.find(rule => rule.propertyType === propertyType)?.visibleEconomicFields ?? [];
+}
 
 export function shouldRenderFieldForPropertyType(
-  _propertyType: PropertySubmission["propertyType"],
-  _fieldKey: string
+  propertyType: PropertySubmission["propertyType"],
+  fieldKey: string,
 ) {
-  return true;
+  if (!(fieldKey in economicFieldMethod)) return true;
+  return getVisibleEconomicFields(propertyType).includes(fieldKey as EconomicFieldKey);
 }
 
 export function toggleViewSelection(

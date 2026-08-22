@@ -18,8 +18,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { PropertySubmission } from "@shared/valuation/contracts";
+import { getApplicableMethods, type ValuationMethod } from "@shared/valuation/method-applicability.policy";
 import { trpc } from "@/lib/trpc";
-import { propertyTypeChoices, toggleViewSelection, viewChoices } from "./home-form-config";
+import { getVisibleEconomicFields, propertyTypeChoices, toggleViewSelection, viewChoices } from "./home-form-config";
 
 const LazyValuationReport = lazy(() => import("@/components/ValuationReport"));
 
@@ -29,6 +30,12 @@ const PATTERN_URL = "/manus-storage/miayaar-evidence-pattern_b999ae17.png";
 const LOGO_URL = "/manus-storage/miayaar-logo-mark_6a147430.png";
 
 const titleize = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, letter => letter.toUpperCase());
+const methodLabels: Readonly<Record<ValuationMethod, string>> = {
+  salesComparison: "Sales comparison",
+  incomeCapitalization: "Income capitalization",
+  cost: "Cost approach",
+  dcf: "Discounted cash flow",
+};
 
 function SelectField({ label, value, children, onChange, optional = false, hint }: { label: string; value: string; children: ReactNode; onChange: (value: string) => void; optional?: boolean; hint?: string }) {
   return (
@@ -92,6 +99,8 @@ export default function Home() {
     return "The returned range is based on server-evaluated evidence and the frozen methodology configuration.";
   }, [report]);
   const selectedType = propertyTypeChoices.find(choice => choice.value === form.propertyType) ?? propertyTypeChoices[0];
+  const applicableMethods = getApplicableMethods(form.propertyType);
+  const visibleEconomicFields = getVisibleEconomicFields(form.propertyType);
 
   function update<K extends keyof PropertySubmission>(key: K, value: PropertySubmission[K]) {
     setInputMessage(null);
@@ -150,7 +159,12 @@ export default function Home() {
           <form onSubmit={submit} noValidate>
             <div className="mi-property-type-strip" aria-label="Property type boundary">
               <div><span>Current contract type</span><b>{selectedType.label}</b><small>{selectedType.description}</small></div>
-              <p><ClipboardCheck size={16} />Field visibility is not inferred by asset type. MIAYAAR keeps the governed inputs available and does not fabricate a type-to-field rule.</p>
+              <p><ClipboardCheck size={16} />Applicable approaches are selected from the frozen methodology. The form shows only the economic inputs supported by those approaches.</p>
+            </div>
+
+            <div className="mi-property-type-strip" aria-label="Applicable valuation approaches">
+              <div><span>Applicable approaches</span><b>{applicableMethods.length} of 4</b><small>§4 method applicability</small></div>
+              <div className="pill-list">{applicableMethods.map(method => <span key={method}>{methodLabels[method]}</span>)}</div>
             </div>
 
             <div className="mi-input-grid mi-input-grid-rebuild">
@@ -169,11 +183,12 @@ export default function Home() {
               </fieldset>
 
               <fieldset><legend><BarChart3 size={17} />Declared economic inputs <CircleHelp size={15} /></legend>
-                <p className="fieldset-note">These are optional declared inputs. They do not create an approach, value, or adjustment in the client.</p>
-                <NumberField label="Annual rent" value={form.annualRentAed} onChange={value => update("annualRentAed", value)} suffix="AED" step={5000} optional />
-                <NumberField label="Replacement cost" value={form.replacementCostPerSqm} onChange={value => update("replacementCostPerSqm", value)} suffix="AED/sqm" step={100} optional />
-                <NumberField label="Land value" value={form.landValueAed} onChange={value => update("landValueAed", value)} suffix="AED" step={50000} optional />
-                <NumberField label="Depreciation factor" value={form.depreciationFactor} onChange={value => update("depreciationFactor", value)} suffix="ratio" step={0.01} optional hint="Validated by the server" />
+                <p className="fieldset-note">Inputs are shown only when their approach applies to the selected type. The server verifies required supplied values; the client does not create an approach, value, or adjustment.</p>
+                {visibleEconomicFields.includes("annualRentAed") && <NumberField label="Annual rent" value={form.annualRentAed} onChange={value => update("annualRentAed", value)} suffix="AED" step={5000} optional />}
+                {visibleEconomicFields.includes("replacementCostPerSqm") && <NumberField label="Replacement cost" value={form.replacementCostPerSqm} onChange={value => update("replacementCostPerSqm", value)} suffix="AED/sqm" step={100} optional />}
+                {visibleEconomicFields.includes("landValueAed") && <NumberField label="Land value" value={form.landValueAed} onChange={value => update("landValueAed", value)} suffix="AED" step={50000} optional />}
+                {visibleEconomicFields.includes("depreciationFactor") && <NumberField label="Depreciation factor" value={form.depreciationFactor} onChange={value => update("depreciationFactor", value)} suffix="ratio" step={0.01} optional hint="Validated by the server" />}
+                {applicableMethods.includes("dcf") && <p className="fieldset-note">DCF is applicable for this type, but its governed engine inputs are not exposed by this public submission contract; the server will not manufacture them.</p>}
                 <div className="mi-absence-note"><Ruler size={15} /><span>Project, legal rights, zoning, hospitality, and secondary-attribute inputs are not shown because no governed UI contract currently supports them.</span></div>
               </fieldset>
             </div>
@@ -186,7 +201,7 @@ export default function Home() {
           {!report ? <div className="mi-empty"><Gauge size={30} /><p className="mi-eyebrow">Step 03 · Decision report</p><h2>A defensible result begins with documented facts.</h2><p>After a server evaluation, MIAYAAR presents the returned evidence, applicable approaches, explicit omissions, and decision trail. It does not fabricate a result when the local record is insufficient.</p><a className="mi-empty-link" href="#workbench">Review the property file <ChevronRight size={15} /></a></div> : <Suspense fallback={<div className="mi-empty" aria-live="polite"><Gauge size={30} /><p>Loading the evidence-led report…</p></div>}><LazyValuationReport report={report} requestId={valuation.data?.requestId} resultSummary={resultSummary} /></Suspense>}
         </section>
 
-        <section className="mi-methodology-card"><div className="methodology-art" style={{ backgroundImage: `url(${DISTRICT_ART_URL})` }}><span>Decision model,<br />not a guessing model.</span></div><div><p className="mi-eyebrow">Method presentation</p><h2>Four independent views of value.</h2><p>Market comparison, income capitalization, cost, and DCF remain separate server-evaluated approaches. The report displays only approaches that are applicable to the supplied facts and evidence.</p><div className="pill-list"><span>Market comparison</span><span>Income capitalization</span><span>Cost approach</span><span>10-year DCF</span></div><a href="#workbench"><Landmark size={15} />Review the property file</a></div></section>
+        <section className="mi-methodology-card"><div className="methodology-art" style={{ backgroundImage: `url(${DISTRICT_ART_URL})` }}><span>Decision model,<br />not a guessing model.</span></div><div><p className="mi-eyebrow">Method presentation</p><h2>Independent views of value.</h2><p>Market comparison, income capitalization, cost, and DCF remain separate server-evaluated approaches. The current property type determines which approaches are applicable; the report displays only the server-evaluated approaches with sufficient data.</p><div className="pill-list">{applicableMethods.map(method => <span key={method}>{methodLabels[method]}</span>)}</div><a href="#workbench"><Landmark size={15} />Review the property file</a></div></section>
 
         <footer><div className="footer-mark"><img src={LOGO_URL} alt="" /><span>MIAYAAR</span></div><p>MIAYAAR is a decision-support platform based on MIAYAAR Methodology v1.2. It does not replace a licensed professional appraisal, legal review, or property inspection.</p><span>© 2026 · Dubai, UAE</span></footer>
       </div>

@@ -8,12 +8,65 @@ import { assembleReport, type ValuationReport } from "../reporting/valuation-rep
 import { ValuationEngine } from "../../../engines/valuation/valuation.engine";
 import { resolveValuationConfiguration } from "../../../engines/valuation/methodology-v1_2";
 import { toCanonicalMarketSnapshot, toCanonicalProperty, toCanonicalValuationData } from "./core-valuation-adapter";
+import {
+  getApplicableMethods,
+  getRequiredSubmissionFieldsForMethod,
+  type ValuationMethod,
+} from "../../../shared/valuation/method-applicability.policy";
 
-function validationErrors(property: PropertySubmission): string[] {
+const methodLabels: Readonly<Record<ValuationMethod, string>> = {
+  salesComparison: "Sales Comparison",
+  incomeCapitalization: "Income Capitalization",
+  cost: "Cost Approach",
+  dcf: "Discounted Cash Flow",
+};
+
+function submittedValue(property: PropertySubmission, field: keyof PropertySubmission): unknown {
+  return property[field];
+}
+
+function methodInputAssessment(property: PropertySubmission) {
+  return getApplicableMethods(property.propertyType).map(method => {
+    const requiredSubmissionFields = getRequiredSubmissionFieldsForMethod(method);
+    const suppliedRequiredFields = requiredSubmissionFields.filter(field => submittedValue(property, field) !== undefined);
+    return {
+      method,
+      requiredSubmissionFields,
+      suppliedRequiredFields,
+      status: requiredSubmissionFields.length === 0
+        ? "not_exposed_by_submission_contract"
+        : suppliedRequiredFields.length === 0
+          ? "not_supplied"
+          : suppliedRequiredFields.length === requiredSubmissionFields.length
+            ? "complete"
+            : "incomplete",
+    } as const;
+  });
+}
+
+export function validationErrors(property: PropertySubmission): string[] {
   const errors: string[] = [];
   if (!property.district.trim()) errors.push("District is required.");
   if (!Number.isFinite(property.areaSqm) || property.areaSqm <= 0) errors.push("Area must be a positive number.");
-  if (property.annualRentAed !== undefined && property.annualRentAed < 0) errors.push("Annual rent cannot be negative.");
+  if (property.annualRentAed !== undefined && (!Number.isFinite(property.annualRentAed) || property.annualRentAed <= 0)) {
+    errors.push("INSUFFICIENT_DATA: Income Capitalization requires annualRentAed greater than zero when it is supplied.");
+  }
+  if (property.replacementCostPerSqm !== undefined && (!Number.isFinite(property.replacementCostPerSqm) || property.replacementCostPerSqm <= 0)) {
+    errors.push("INSUFFICIENT_DATA: Cost Approach requires replacementCostPerSqm greater than zero when it is supplied.");
+  }
+  if (property.depreciationFactor !== undefined && (!Number.isFinite(property.depreciationFactor) || property.depreciationFactor < 0 || property.depreciationFactor >= 1)) {
+    errors.push("INSUFFICIENT_DATA: Cost Approach requires depreciationFactor from zero (inclusive) to one (exclusive) when it is supplied.");
+  }
+  if (property.landValueAed !== undefined && (!Number.isFinite(property.landValueAed) || property.landValueAed < 0)) {
+    errors.push("INSUFFICIENT_DATA: Land value cannot be negative when it is supplied.");
+  }
+
+  for (const assessment of methodInputAssessment(property)) {
+    if (assessment.status === "incomplete") {
+      const missing = assessment.requiredSubmissionFields.filter(field => !assessment.suppliedRequiredFields.includes(field));
+      errors.push(`INSUFFICIENT_DATA: ${methodLabels[assessment.method]} requires ${missing.join(", ")} when any of its governed submission inputs is supplied.`);
+    }
+  }
   return errors;
 }
 
@@ -27,8 +80,9 @@ export async function executeValuation(input: { property: PropertySubmission; us
   const requestId = `val_${randomUUID()}`;
   await createValuationRequest({ id: requestId, userId: input.userId ?? null, methodologyVersion: configuration.version, propertyInput: input.property, status: "received" });
 
+  const inputAssessment = methodInputAssessment(input.property);
   const errors = validationErrors(input.property);
-  await audit(requestId, "validation", errors.length ? "rejected" : "accepted", { errors });
+  await audit(requestId, "validation", errors.length ? "rejected" : "accepted", { errors, methodInputAssessment: inputAssessment });
   if (errors.length) {
     await updateValuationRequestStatus(requestId, "rejected");
     return { requestId, report: assembleReport({ status: "rejected", configuration, property: input.property, evidence: { status: "unavailable", reason: "insufficient_local_comparables", availableCount: 0, requiredCount: 5, search: { district: input.property.district, propertyType: input.property.propertyType, windowDays: 0, asOf: new Date() } }, warnings: errors }) };

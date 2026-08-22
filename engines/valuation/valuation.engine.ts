@@ -32,6 +32,7 @@ import {
   ValuationRequest,
 } from './types';
 import { METHODOLOGY_DOCUMENT_ID, METHODOLOGY_VERSION } from './methodology-v1_2';
+import { getApplicableMethodsForCanonicalPropertyType } from '../../shared/valuation/method-applicability.policy';
 
 type Scenario = 'lower' | 'baseline' | 'upper';
 type ApproachKey = 'salesComparison' | 'incomeCapitalization' | 'cost' | 'dcf';
@@ -257,11 +258,12 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
       return this.buildUnavailableResult('VAL_ERR_INVALID_CONFIGURATION', 'The injected valuation configuration is structurally invalid.', request.requestId);
     }
 
+    const applicableMethods = getApplicableMethodsForCanonicalPropertyType(request.property.classification.type);
     const calculations = [
-      calculateSalesComparison(request.data, request.property),
-      calculateIncomeCapitalization(request.data?.income),
-      calculateCostApproach(request.data?.cost, request.property),
-      calculateDiscountedCashFlow(request.data?.dcf),
+      applicableMethods.includes('salesComparison') ? calculateSalesComparison(request.data, request.property) : undefined,
+      applicableMethods.includes('incomeCapitalization') ? calculateIncomeCapitalization(request.data?.income) : undefined,
+      applicableMethods.includes('cost') ? calculateCostApproach(request.data?.cost, request.property) : undefined,
+      applicableMethods.includes('dcf') ? calculateDiscountedCashFlow(request.data?.dcf) : undefined,
     ].filter((calculation): calculation is ApproachCalculation => calculation !== undefined);
 
     if (!calculations.length) {
@@ -275,7 +277,7 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
       return this.buildUnavailableResult('VAL_ERR_UNUSABLE_APPROACH_WEIGHTS', 'Active approaches cannot be aggregated with the supplied scenario weights.', request.requestId);
     }
 
-    const warnings = this.buildWarnings(calculations);
+    const warnings = this.buildWarnings(calculations, applicableMethods);
     const valuation = this.buildValuation(request, {
       lower: scenarios.lower,
       baseline: scenarios.baseline,
@@ -295,9 +297,12 @@ export class ValuationEngine implements IEngine<ValuationRequest, ValuationOutco
     return warnings.length > 0 ? ResultStatus.PARTIAL : ResultStatus.SUCCESS;
   }
 
-  private buildWarnings(calculations: readonly ApproachCalculation[]): readonly Warning[] {
+  private buildWarnings(
+    calculations: readonly ApproachCalculation[],
+    applicableMethods: readonly ApproachKey[],
+  ): readonly Warning[] {
     const available = new Set(calculations.map(calculation => calculation.key));
-    const warnings: Warning[] = (['salesComparison', 'incomeCapitalization', 'cost', 'dcf'] as const)
+    const warnings: Warning[] = applicableMethods
       .filter(key => !available.has(key))
       .map(key => ({ code: 'VAL_WARN_APPROACH_UNAVAILABLE', message: `${key} is unavailable because its input data is absent, invalid, or incompatible.` }));
 

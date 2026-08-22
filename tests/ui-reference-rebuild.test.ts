@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   contractPropertyFields,
+  getVisibleEconomicFields,
   propertyTypeChoices,
   shouldRenderFieldForPropertyType,
   toggleViewSelection,
@@ -20,7 +21,7 @@ describe("UI reference rebuild contract guardrails", () => {
     ]);
   });
 
-  it("keeps every governed input group present without introducing a type-specific field rule", () => {
+  it("keeps every governed input group present and exposes economic fields only for an applicable §4 method", () => {
     expect(contractPropertyFields).toEqual([
       "propertyType",
       "district",
@@ -39,10 +40,20 @@ describe("UI reference rebuild contract guardrails", () => {
       "landValueAed",
       "depreciationFactor",
     ]);
-    expect(typeSpecificFieldRules).toEqual([]);
+    expect(typeSpecificFieldRules).toHaveLength(7);
     expect(shouldRenderFieldForPropertyType("apartment", "annualRentAed")).toBe(
       true
     );
+    expect(shouldRenderFieldForPropertyType("apartment", "replacementCostPerSqm")).toBe(false);
+    expect(shouldRenderFieldForPropertyType("land", "annualRentAed")).toBe(false);
+    expect(shouldRenderFieldForPropertyType("land", "replacementCostPerSqm")).toBe(false);
+    expect(getVisibleEconomicFields("villa")).toEqual([
+      "annualRentAed",
+      "replacementCostPerSqm",
+      "landValueAed",
+      "depreciationFactor",
+    ]);
+    expect(getVisibleEconomicFields("warehouse")).toEqual([]);
     expect(shouldRenderFieldForPropertyType("warehouse", "floor")).toBe(true);
   });
 
