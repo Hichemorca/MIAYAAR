@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   clearInapplicableEconomicInputs,
+  findServerApproachResult,
   getApplicableMethodFields,
+  getApplicableMethodPresentation,
   contractPropertyFields,
+  getServerApproachLabel,
   getVisibleEconomicFields,
   getPublicMethodFields,
   propertyTypeChoices,
@@ -95,6 +98,50 @@ describe("UI reference rebuild contract guardrails", () => {
     expect(getApplicableMethodFields("warehouse")).toEqual([
       { method: "salesComparison", fieldKeys: ["district", "areaSqm"] },
     ]);
+  });
+
+  it("presents only policy-applicable approaches with the valuation engine labels", () => {
+    expect(getServerApproachLabel("salesComparison")).toBe("Sales Comparison");
+    expect(getServerApproachLabel("incomeCapitalization")).toBe("Income Capitalization");
+    expect(getServerApproachLabel("cost")).toBe("Cost Approach");
+    expect(getServerApproachLabel("dcf")).toBe("Discounted Cash Flow");
+
+    expect(getApplicableMethodPresentation("apartment").map(item => item.method)).toEqual([
+      "salesComparison",
+      "incomeCapitalization",
+      "dcf",
+    ]);
+    for (const propertyType of ["villa", "townhouse", "office", "retail"] as const) {
+      expect(getApplicableMethodPresentation(propertyType).map(item => item.method)).toEqual([
+        "salesComparison",
+        "incomeCapitalization",
+        "cost",
+        "dcf",
+      ]);
+    }
+    expect(getApplicableMethodPresentation("land").map(item => item.method)).toEqual([
+      "salesComparison",
+      "dcf",
+    ]);
+    expect(getApplicableMethodPresentation("warehouse").map(item => item.method)).toEqual([
+      "salesComparison",
+    ]);
+  });
+
+  it("shows a per-method result only when that approach is present in the server response", () => {
+    const serverResults = [
+      { approach: "Sales Comparison", value: 1_200_000 },
+      { approach: "Income Capitalization", value: 1_150_000 },
+    ] as const;
+
+    expect(findServerApproachResult(serverResults, "salesComparison")).toEqual(
+      serverResults[0],
+    );
+    expect(findServerApproachResult(serverResults, "incomeCapitalization")).toEqual(
+      serverResults[1],
+    );
+    expect(findServerApproachResult(serverResults, "cost")).toBeUndefined();
+    expect(findServerApproachResult(serverResults, "dcf")).toBeUndefined();
   });
 
   it("keeps the required view list non-empty and respects the server-backed five-view cap", () => {

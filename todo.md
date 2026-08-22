@@ -147,3 +147,6 @@
 - [x] Phase 2 input workflow: rebuild the valuation input surface into Property Identification, Property Characteristics, and Economic Inputs using existing governed fields only.
 - [x] Phase 2 input workflow: show applicable property characteristics and economic inputs exclusively from the existing policy and contract, and clear no-longer-valid entries when property type changes.
 - [x] Phase 2 input workflow: add seven-type visibility and invalid-input-clearing regression coverage, record visual verification, run quality gates, and open one pull request.
+- [x] Phase 3 methodology presentation: render only the four governed valuation methods, their applicable public fields, and server-returned approach results.
+- [x] Phase 3 methodology presentation: distinguish applicable evidence insufficiency from NOT_APPLICABLE without creating a method, field, or result.
+- [x] Phase 3 methodology presentation: add seven-type policy coverage, verification evidence, quality-gate results, and one pull request.

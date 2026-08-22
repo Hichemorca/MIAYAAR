@@ -82,6 +82,14 @@ export const publicMethodFieldLabels = {
   depreciationFactor: "Depreciation factor",
 } as const satisfies Partial<Record<keyof PropertySubmission, string>>;
 
+/** Server-result labels are fixed by the existing valuation engine. */
+export const serverApproachLabels = {
+  salesComparison: "Sales Comparison",
+  incomeCapitalization: "Income Capitalization",
+  cost: "Cost Approach",
+  dcf: "Discounted Cash Flow",
+} as const satisfies Readonly<Record<ValuationMethod, string>>;
+
 export type PublicMethodFieldKey = keyof typeof publicMethodFieldLabels;
 
 function isPublicMethodFieldKey(fieldKey: string): fieldKey is PublicMethodFieldKey {
@@ -111,6 +119,25 @@ export function getApplicableMethodFields(
     method,
     fieldKeys: getPublicMethodFields(method),
   }));
+}
+
+export function getApplicableMethodPresentation(
+  propertyType: PropertySubmission["propertyType"],
+) {
+  return getApplicableMethodFields(propertyType);
+}
+
+export function getServerApproachLabel(method: ValuationMethod): string {
+  return serverApproachLabels[method];
+}
+
+export function findServerApproachResult<T extends { readonly approach: string }>(
+  approachResults: readonly T[],
+  method: ValuationMethod,
+): T | undefined {
+  return approachResults.find(
+    approach => approach.approach === getServerApproachLabel(method),
+  );
 }
 
 /** §4-driven UI visibility: an economic input is visible only with its method. */
