@@ -29,6 +29,7 @@ import {
   toggleViewSelection,
   viewChoices,
 } from "./home-form-config";
+import MethodApplicabilityPanel from "@/components/MethodApplicabilityPanel";
 import "./property-input-workflow.css";
 
 const LazyValuationReport = lazy(() => import("@/components/ValuationReport"));
@@ -224,6 +225,8 @@ export default function Home() {
         <section id="valuation-report" className="mi-report-shell">
           {!report ? <div className="mi-empty"><Gauge size={30} /><p className="mi-eyebrow">Step 03 · Decision report</p><h2>A defensible result begins with documented facts.</h2><p>After a server evaluation, MIAYAAR presents the returned evidence, applicable approaches, explicit omissions, and decision trail. It does not fabricate a result when the local record is insufficient.</p><a className="mi-empty-link" href="#workbench">Review the property file <ChevronRight size={15} /></a></div> : <Suspense fallback={<div className="mi-empty" aria-live="polite"><Gauge size={30} /><p>Loading the evidence-led report…</p></div>}><LazyValuationReport report={report} requestId={valuation.data?.requestId} resultSummary={resultSummary} /></Suspense>}
         </section>
+
+        <MethodApplicabilityPanel propertyType={form.propertyType} report={report} />
 
         <section className="mi-methodology-card"><div className="methodology-art" style={{ backgroundImage: `url(${DISTRICT_ART_URL})` }}><span>Decision model,<br />not a guessing model.</span></div><div><p className="mi-eyebrow">Method presentation</p><h2>Independent views of value.</h2><p>Market comparison, income capitalization, cost, and DCF remain separate server-evaluated approaches. The current property type determines which approaches are applicable; the report displays only the server-evaluated approaches with sufficient data.</p><div className="pill-list">{applicableMethods.map(method => <span key={method}>{methodLabels[method]}</span>)}</div><a href="#workbench"><Landmark size={15} />Review the property file</a></div></section>
 
