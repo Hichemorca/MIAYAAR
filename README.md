@@ -68,6 +68,10 @@ The §4–§5 implementation was merged through [PR #67](https://github.com/Hich
 
 The UI verification record covers Apartment, Land, and Warehouse applicability states in [`docs/verification/METHOD-APPLICABILITY-UI-VERIFICATION-2026-08-22.md`](./docs/verification/METHOD-APPLICABILITY-UI-VERIFICATION-2026-08-22.md).
 
+## Project History Documentation Index
+
+The historical delivery index links each numbered project stage from PR #2 through PR #67 to its implementation, governance, operations, security, or verification record. It distinguishes merged delivery from open work and flags number gaps rather than inventing historical stages. See [`docs/PROJECT-HISTORY-DOCUMENTATION-INDEX.md`](./docs/PROJECT-HISTORY-DOCUMENTATION-INDEX.md).
+
 ## Local development
 
 The full-stack application uses React, TypeScript, Vite, Express, tRPC, Drizzle, PostgreSQL, Netlify Functions, and Vitest. Install the locked dependency graph and run the following commands from the repository root.

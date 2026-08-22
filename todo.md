@@ -142,3 +142,4 @@
 - [x] Methodology §4–§5 delivery: commit the approved scope and open pull request #67; automated checks are to be recorded from the pull-request status.
 - [x] Documentation: update README to record the merged §4–§5 method-applicability policy, validation, UI behavior, verification status, and the absence of an automatically authorized next product phase.
 - [x] Documentation audit: compare README history and its present coverage with the merged project phases; report which earlier changes were documented and which remain absent without extending product scope.
+- [x] Documentation: create a Project History Documentation Index that maps merged PRs #2–#67 to their implementation milestones, authoritative documentation, and governance or verification records.
