@@ -20,6 +20,15 @@ vi.mock("../../client/src/components/EvidenceIntegrityPanel", () => ({
     ),
 }));
 
+vi.mock("../../client/src/components/MarketIntelligencePanel", () => ({
+  default: () =>
+    createElement(
+      "aside",
+      { "data-testid": "market-intelligence" },
+      "Market Snapshot"
+    ),
+}));
+
 const report: ValuationReportData = {
   status: "completed",
   methodology: { documentId: "VALUATION-METHODOLOGY", version: "1.2" },
@@ -100,6 +109,7 @@ describe("ValuationReport presentation", () => {
     expect(markup).toContain("Oldest comparable");
     expect(markup).toContain("19 days");
     expect(markup).toContain("Decision trace");
+    expect(markup).toContain("Market Snapshot");
     expect(markup).toContain("BUSINESS BAY");
     expect(markup).toContain("90-day window");
     expect(markup).toContain("Market Comparison");
