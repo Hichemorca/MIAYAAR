@@ -150,3 +150,6 @@
 - [x] Phase 3 methodology presentation: render only the four governed valuation methods, their applicable public fields, and server-returned approach results.
 - [x] Phase 3 methodology presentation: distinguish applicable evidence insufficiency from NOT_APPLICABLE without creating a method, field, or result.
 - [x] Phase 3 methodology presentation: add seven-type policy coverage, verification evidence, quality-gate results, and one pull request.
+- [x] Phase 4 methodology explanation: present used, available, and not-applicable governed methods with policy-derived applicability explanations and server-returned calculation outcomes only.
+- [x] Phase 4 methodology explanation: present Success, Partial, or Error only when deterministically derived from the existing server response, without inventing a result status or non-calculation reason.
+- [x] Phase 4 methodology explanation: add seven-type explanation coverage, verification evidence, quality gates, and one pull request.

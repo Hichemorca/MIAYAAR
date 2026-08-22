@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import type { ValuationReport } from "../server/engines/reporting/valuation-report";
+import MethodologyExplanationPanel from "../client/src/components/MethodologyExplanationPanel";
 import {
   clearInapplicableEconomicInputs,
   findServerApproachResult,
+  allValuationMethods,
   getApplicableMethodFields,
   getApplicableMethodPresentation,
+  getMethodNotApplicableExplanation,
+  getPresentationReportStatus,
   contractPropertyFields,
   getServerApproachLabel,
   getVisibleEconomicFields,
@@ -142,6 +149,103 @@ describe("UI reference rebuild contract guardrails", () => {
     );
     expect(findServerApproachResult(serverResults, "cost")).toBeUndefined();
     expect(findServerApproachResult(serverResults, "dcf")).toBeUndefined();
+  });
+
+  it("explains non-applicable methods only from the governed policy for all seven property types", () => {
+    expect(allValuationMethods).toEqual([
+      "salesComparison",
+      "incomeCapitalization",
+      "cost",
+      "dcf",
+    ]);
+
+    const expectedNotApplicable = {
+      apartment: ["cost"],
+      villa: [],
+      townhouse: [],
+      office: [],
+      retail: [],
+      land: ["incomeCapitalization", "cost"],
+      warehouse: ["incomeCapitalization", "cost", "dcf"],
+    } as const;
+
+    for (const propertyType of propertyTypeChoices.map(choice => choice.value)) {
+      for (const method of allValuationMethods) {
+        const explanation = getMethodNotApplicableExplanation(propertyType, method);
+        if (expectedNotApplicable[propertyType].includes(method)) {
+          expect(explanation).toContain("is not applicable to");
+          expect(explanation).toContain("governed method policy");
+        } else {
+          expect(explanation).toBeUndefined();
+        }
+      }
+    }
+
+    expect(getMethodNotApplicableExplanation("apartment", "cost")).toBe(
+      "Cost Approach is not applicable to Apartment under the governed method policy.",
+    );
+    expect(getMethodNotApplicableExplanation("land", "incomeCapitalization")).toBe(
+      "Income Capitalization is not applicable to Land under the governed method policy.",
+    );
+    expect(getMethodNotApplicableExplanation("warehouse", "dcf")).toBe(
+      "Discounted Cash Flow is not applicable to Warehouse under the governed method policy.",
+    );
+  });
+
+  it("maps server report statuses to presentation labels without creating another outcome", () => {
+    expect(getPresentationReportStatus("completed")).toMatchObject({
+      label: "Success",
+      tone: "success",
+    });
+    expect(getPresentationReportStatus("partial")).toMatchObject({
+      label: "Partial",
+      tone: "partial",
+    });
+    expect(getPresentationReportStatus("rejected")).toMatchObject({
+      label: "Error",
+      tone: "error",
+    });
+  });
+
+  it("presents used, available, and policy-not-applicable methods without assigning a general warning to a method", () => {
+    const report = {
+      status: "partial",
+      warnings: [
+        "incomeCapitalization is unavailable because its input data is absent, invalid, or incompatible.",
+        "The completed valuation applies explicitly labelled provisional calculation rules.",
+      ],
+      valuation: {
+        result: {
+          approachResults: [
+            {
+              approach: "Sales Comparison",
+              value: { amount: 1_200_000, currency: { code: "AED" } },
+            },
+          ],
+        },
+      },
+    } as unknown as ValuationReport;
+
+    const markup = renderToStaticMarkup(
+      React.createElement(MethodologyExplanationPanel, {
+        propertyType: "apartment",
+        report,
+      }),
+    );
+
+    expect(markup).toContain("Partial");
+    expect(markup).toContain("Used in this valuation");
+    expect(markup).toContain("Server result:");
+    expect(markup).toContain("Applicable · no result returned");
+    expect(markup).toContain(
+      "incomeCapitalization is unavailable because its input data is absent, invalid, or incompatible.",
+    );
+    expect(markup).toContain(
+      "Cost Approach is not applicable to Apartment under the governed method policy.",
+    );
+    expect(markup).not.toContain(
+      "The completed valuation applies explicitly labelled provisional calculation rules.",
+    );
   });
 
   it("keeps the required view list non-empty and respects the server-backed five-view cap", () => {

@@ -1,0 +1,115 @@
+.mi-methodology-explanation {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1.25rem;
+}
+
+.mi-methodology-explanation .section-lead {
+  align-items: flex-start;
+}
+
+.methodology-outcome {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--mi-border);
+  border-left: 4px solid var(--mi-ink);
+  background: color-mix(in srgb, var(--mi-paper) 92%, white);
+}
+
+.methodology-outcome > span,
+.methodology-method-heading > span {
+  color: var(--mi-muted);
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.methodology-outcome > b {
+  font-family: var(--mi-display);
+  font-size: 1.05rem;
+}
+
+.methodology-outcome > p {
+  margin: 0;
+  color: var(--mi-muted);
+  font-size: 0.8rem;
+}
+
+.methodology-outcome--success {
+  border-left-color: var(--mi-verdigris);
+}
+
+.methodology-outcome--partial {
+  border-left-color: var(--mi-ochre);
+}
+
+.methodology-outcome--error {
+  border-left-color: var(--mi-rust);
+}
+
+.methodology-explanation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.methodology-method {
+  display: grid;
+  gap: 0.55rem;
+  min-height: 8.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--mi-border);
+  background: var(--mi-paper);
+}
+
+.methodology-method--used {
+  border-top: 3px solid var(--mi-verdigris);
+}
+
+.methodology-method--available {
+  border-top: 3px solid var(--mi-ochre);
+}
+
+.methodology-method--not-applicable {
+  border-top: 3px solid var(--mi-border-strong);
+  background: color-mix(in srgb, var(--mi-paper) 86%, var(--mi-sand));
+}
+
+.methodology-method-heading {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.methodology-method-heading > b {
+  color: var(--mi-ink);
+  font-family: var(--mi-display);
+  font-size: 1.08rem;
+}
+
+.methodology-method-value,
+.methodology-method-reason {
+  margin: 0;
+  color: var(--mi-muted);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.methodology-method-value > strong {
+  color: var(--mi-ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .methodology-outcome {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .methodology-explanation-grid {
+    grid-template-columns: 1fr;
+  }
+}
