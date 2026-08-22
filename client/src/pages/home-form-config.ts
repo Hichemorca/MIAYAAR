@@ -90,6 +90,57 @@ export const serverApproachLabels = {
   dcf: "Discounted Cash Flow",
 } as const satisfies Readonly<Record<ValuationMethod, string>>;
 
+/** The four and only four governed valuation methods. */
+export const allValuationMethods = [
+  "salesComparison",
+  "incomeCapitalization",
+  "cost",
+  "dcf",
+] as const satisfies readonly ValuationMethod[];
+
+export type PresentationReportStatus = "success" | "partial" | "error";
+
+export function getPresentationReportStatus(status: "completed" | "partial" | "rejected"): {
+  label: "Success" | "Partial" | "Error";
+  tone: PresentationReportStatus;
+  description: string;
+} {
+  if (status === "completed") {
+    return {
+      label: "Success",
+      tone: "success",
+      description: "The server completed the valuation report.",
+    };
+  }
+
+  if (status === "partial") {
+    return {
+      label: "Partial",
+      tone: "partial",
+      description: "The server returned a valuation report with warnings.",
+    };
+  }
+
+  return {
+    label: "Error",
+    tone: "error",
+    description: "The server rejected the valuation report and returned its reason below.",
+  };
+}
+
+/** Returns a policy fact only; missing calculation reasons remain server-owned. */
+export function getMethodNotApplicableExplanation(
+  propertyType: PropertySubmission["propertyType"],
+  method: ValuationMethod,
+): string | undefined {
+  if (getApplicableMethods(propertyType).includes(method)) return undefined;
+
+  const propertyTypeLabel = propertyTypeChoices.find(
+    choice => choice.value === propertyType,
+  )?.label;
+  return `${getServerApproachLabel(method)} is not applicable to ${propertyTypeLabel ?? propertyType} under the governed method policy.`;
+}
+
 export type PublicMethodFieldKey = keyof typeof publicMethodFieldLabels;
 
 function isPublicMethodFieldKey(fieldKey: string): fieldKey is PublicMethodFieldKey {
