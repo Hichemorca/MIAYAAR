@@ -156,3 +156,6 @@
 - [x] Phase 5 valuation results: rebuild the valuation report into property summary, applicable methods, method results, final valuation, confidence, evidence, comparables, decision trace, warnings, and data limitations using server-returned data only.
 - [x] Phase 5 valuation results: classify rendered content as FACT, ASSESSMENT, UNAVAILABLE, or NOT_APPLICABLE without fabricating a value, evidence state, comparable, trace step, warning, or limitation.
 - [x] Phase 5 valuation results: add seven-type report coverage, verification evidence, quality gates, and one pull request.
+- [x] Phase 6 Market Intelligence: render the existing server-returned DLD benchmark snapshot as a read-only report surface without affecting valuation, methodology, confidence, fallbacks, or diagnostics.
+- [x] Phase 6 Market Intelligence: distinguish available and unavailable benchmark states using the existing server contract only, including sample count, governed date window, source, provenance, and contract-supported data-quality facts.
+- [x] Phase 6 Market Intelligence: add available/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.

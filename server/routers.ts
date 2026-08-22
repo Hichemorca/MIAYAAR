@@ -6,6 +6,8 @@ import { z } from "zod";
 import { executeValuation } from "./engines/orchestrator/valuation-orchestrator";
 import { EvidenceIntegrityService } from "../engines/evidence-integrity/evidence-integrity.service";
 import { DldEvidenceIntegrityProvider } from "./evidence-integrity/dld-evidence-integrity-provider";
+import { MarketIntelligenceService } from "../engines/market-intelligence/market-intelligence.service";
+import { DldMarketIntelligenceProvider } from "./market-intelligence/dld-market-intelligence-provider";
 import {
   getGovernanceStorageSnapshot,
   getServerConnectionRoleEvidence,
@@ -83,6 +85,27 @@ const evidenceIntegrityReportRequest = z
   })
   .strict();
 
+/**
+ * Presentation input for the existing read-only MI v1.0 benchmark. The shape
+ * intentionally mirrors the governed District + Property Type + asOf scope;
+ * it does not accept a candidate price, property size, or valuation inputs.
+ */
+const marketIntelligenceBenchmarkRequest = z
+  .object({
+    district: z.string().trim().min(1).max(160),
+    propertyType: z.enum([
+      "apartment",
+      "villa",
+      "townhouse",
+      "office",
+      "retail",
+      "land",
+      "warehouse",
+    ]),
+    asOf: z.coerce.date(),
+  })
+  .strict();
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -113,6 +136,20 @@ export const appRouter = router({
         new EvidenceIntegrityService(
           new DldEvidenceIntegrityProvider()
         ).inspect(input)
+      ),
+  }),
+  marketIntelligence: router({
+    /**
+     * Read-only presentation access to the independent MI v1.0 service. This
+     * procedure forwards the existing contract without invoking valuation,
+     * confidence, comparable selection, diagnostics, or a fallback rule.
+     */
+    benchmark: publicProcedure
+      .input(marketIntelligenceBenchmarkRequest)
+      .query(({ input }) =>
+        new MarketIntelligenceService(
+          new DldMarketIntelligenceProvider()
+        ).getBenchmark(input)
       ),
   }),
   governance: router({

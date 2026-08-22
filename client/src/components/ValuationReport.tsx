@@ -11,6 +11,7 @@ import EvidenceIntegrityPanel from "./EvidenceIntegrityPanel";
 import { getCompletedValuationEvidenceContext } from "./valuation-report-evidence-context";
 import MethodologyExplanationPanel from "./MethodologyExplanationPanel";
 import ValuationReportContext, { ReportContentCategoryTag } from "./ValuationReportContext";
+import MarketIntelligencePanel from "./MarketIntelligencePanel";
 
 type ValuationReportProps = {
   report: ValuationReportData;
@@ -65,6 +66,12 @@ export default function ValuationReport({ report, requestId, resultSummary }: Va
     <section id="evidence" className="mi-evidence"><div className="section-lead"><span>04</span><div><div className="mi-section-heading"><h3>Evidence and comparables</h3><ReportContentCategoryTag category={report.evidence.status === "available" ? "FACT" : "UNAVAILABLE"} /></div><p>Only local, eligible DLD sales that passed the evidence rules are made available to the valuation.</p></div></div><div>{report.evidence.status === "available" ? <><div className="evidence-meta"><span><Database size={15} />Dubai Land Department</span><span><Workflow size={15} />{report.evidence.search.windowDays}-day search window</span><span><BadgeCheck size={15} />{report.evidence.comparables.length} eligible comparables</span></div><div className="evidence-table"><div className="evidence-head"><span>Transaction reference</span><span>Date</span><span>Area</span><span>Sale price</span><span>Time-adjusted AED/sqm</span></div>{report.evidence.comparables.slice(0, 8).map(item => <div className="evidence-row" key={item.sourceTransactionId}><span><b>{item.sourceTransactionId}</b><small>{titleize(item.district)}</small></span><span>{new Date(item.transactionDate).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span><span>{item.areaSqm.toLocaleString("en-AE")} sqm</span><span>{formatAED(item.salePriceAed)}</span><span>{formatAED(item.timeAdjustedPricePerSqm)}</span></div>)}</div></> : <div className="evidence-unavailable"><AlertTriangle size={20} /><div><b>Local evidence is insufficient</b><p>Found {report.evidence.availableCount} eligible records; the frozen methodology requires {report.evidence.requiredCount}. No city-wide substitute was used.</p></div></div>}</div></section>
 
     <EvidenceIntegrityPanel {...evidenceIntegrityContext} autoRequest />
+
+    <MarketIntelligencePanel
+      district={report.property.district}
+      propertyType={report.property.propertyType}
+      asOf={report.evidence.search.asOf}
+    />
 
     {report.confidence && <section className="mi-confidence"><div className="section-lead"><span>05</span><div><div className="mi-section-heading"><h3>Confidence record</h3><ReportContentCategoryTag category="ASSESSMENT" /></div><p>This is the server-authored confidence assessment. It does not change the value, evidence eligibility, or valuation methodology.</p></div></div><div className="mi-confidence-card"><div className="mi-confidence-heading"><div><span>Server assessment</span><b>{titleize(report.confidence.level)}</b></div><p>{report.confidence.explanation}</p></div><dl className="mi-confidence-facts"><div><dt>Assessment basis</dt><dd>{titleize(report.confidence.basis)}</dd></div><div><dt>Range width</dt><dd>{formatPercentage(report.confidence.rangeWidthPercent)}</dd></div><div><dt>Comparable count</dt><dd>{report.confidence.evidence.comparableCount}</dd></div><div><dt>Oldest comparable</dt><dd>{report.confidence.evidence.oldestComparableAgeDays} days</dd></div></dl></div></section>}
 
