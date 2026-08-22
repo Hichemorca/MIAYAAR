@@ -159,3 +159,7 @@
 - [x] Phase 6 Market Intelligence: render the existing server-returned DLD benchmark snapshot as a read-only report surface without affecting valuation, methodology, confidence, fallbacks, or diagnostics.
 - [x] Phase 6 Market Intelligence: distinguish available and unavailable benchmark states using the existing server contract only, including sample count, governed date window, source, provenance, and contract-supported data-quality facts.
 - [x] Phase 6 Market Intelligence: add available/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.
+- [x] Phase 7 Comparable Selection: render server-returned selected and excluded comparable records as a read-only report surface without changing selection policy, ranking, criteria, or fallbacks.
+- [x] Phase 7 Comparable Selection: distinguish selected, excluded, and unavailable states using contract-supported property reference, location, type, transaction facts, count, and exclusion reasons only.
+- [ ] Phase 7 Comparable Selection: add selected/unavailable presentation tests, a verification record, full quality-gate evidence, and one pull request.
+- [x] Phase 7 Comparable Selection: add the approved read-only `comparableSelection.preview` server adapter for DLD candidates using district, propertyType, areaSqm, and asOf only, then pass those records unchanged into CS-v1.0.

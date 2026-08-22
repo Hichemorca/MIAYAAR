@@ -12,6 +12,7 @@ import { getCompletedValuationEvidenceContext } from "./valuation-report-evidenc
 import MethodologyExplanationPanel from "./MethodologyExplanationPanel";
 import ValuationReportContext, { ReportContentCategoryTag } from "./ValuationReportContext";
 import MarketIntelligencePanel from "./MarketIntelligencePanel";
+import ComparableSelectionPanel from "./ComparableSelectionPanel";
 
 type ValuationReportProps = {
   report: ValuationReportData;
@@ -70,6 +71,13 @@ export default function ValuationReport({ report, requestId, resultSummary }: Va
     <MarketIntelligencePanel
       district={report.property.district}
       propertyType={report.property.propertyType}
+      asOf={report.evidence.search.asOf}
+    />
+
+    <ComparableSelectionPanel
+      district={report.property.district}
+      propertyType={report.property.propertyType}
+      areaSqm={report.property.areaSqm}
       asOf={report.evidence.search.asOf}
     />
 

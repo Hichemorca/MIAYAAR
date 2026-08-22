@@ -13,6 +13,7 @@ import {
   valuationRequests,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import type { ComparableSelectionCandidate } from "../contracts/comparable-selection.contracts";
 
 function createDatabase(databaseUrl: string) {
   const isSupabaseDatabase = /(?:^|[./])supabase\.(?:co|com)(?::|[/]|$)/i.test(databaseUrl);
@@ -344,6 +345,32 @@ export async function listEligibleComparableTransactions(input: {
       eq(marketTransactions.propertyType, input.propertyType),
       gte(marketTransactions.transactionDate, input.from),
     ))
+    .orderBy(desc(marketTransactions.transactionDate));
+}
+
+/**
+ * Read-only DLD candidate source for the governed Comparable Selection preview.
+ * Filtering, exclusion and ranking remain exclusively in CS-v1.0.
+ */
+export async function listDldComparableSelectionCandidates(): Promise<
+  ComparableSelectionCandidate[]
+> {
+  const db = await getDb();
+  if (!db) throw new Error("Market evidence storage is unavailable.");
+
+  return db
+    .select({
+      sourceTransactionId: marketTransactions.sourceTransactionId,
+      transactionDate: marketTransactions.transactionDate,
+      district: marketTransactions.district,
+      propertyType: marketTransactions.propertyType,
+      areaSqm: marketTransactions.areaSqm,
+      salePriceAed: marketTransactions.salePriceAed,
+      pricePerSqm: marketTransactions.pricePerSqm,
+      evidenceStatus: marketTransactions.evidenceStatus,
+    })
+    .from(marketTransactions)
+    .where(eq(marketTransactions.source, "DLD"))
     .orderBy(desc(marketTransactions.transactionDate));
 }
 
