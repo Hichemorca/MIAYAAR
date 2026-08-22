@@ -35,6 +35,10 @@ const noLoginAdministrativePackagePath = path.join(
   repositoryRoot,
   "docs/security/RLS-U010-NOLOGIN-ADMINISTRATIVE-CHANGE-PACKAGE-2026-08-22.md"
 );
+const softwareClosurePath = path.join(
+  repositoryRoot,
+  "docs/security/RLS-U010-SOFTWARE-CLOSURE-2026-08-22.md"
+);
 
 const protectedTables = [
   "users",
@@ -139,10 +143,11 @@ describe("RLS hardening design", () => {
     expect(migration).not.toMatch(/force\s+row\s+level\s+security/i);
   });
 
-  test("documents the staged application and rollback gate without exposing secrets", () => {
+  test("preserves the historical preparation package without exposing secrets", () => {
     const implementationPackage = readFileSync(applicationRolePackagePath, "utf8");
 
-    expect(implementationPackage).toContain("**PREPARED / NOT APPLIED.**");
+    expect(implementationPackage).toContain("**HISTORICAL PREPARATION ARTIFACT — SOFTWARE ROLLOUT CLOSED.**");
+    expect(implementationPackage).toContain("**Applied; see rollout record**");
     expect(implementationPackage).toContain("second explicit\nowner decision");
     expect(implementationPackage).toContain("`rolbypassrls=false`");
     expect(implementationPackage).toContain("DLD ingestion script is intentionally out of scope");
@@ -173,5 +178,18 @@ describe("RLS hardening design", () => {
     expect(administrativePackage).toContain("`DATABASE_URL` unchanged");
     expect(administrativePackage).toContain("Do not invoke `valuation.run`");
     expect(administrativePackage).toContain("Database Administrator or Supabase Support");
+  });
+
+  test("closes U-010 as software-delivered while keeping NOLOGIN administrative-only", () => {
+    const softwareClosure = readFileSync(softwareClosurePath, "utf8");
+
+    expect(softwareClosure).toContain("CLOSED AS SOFTWARE-DELIVERED");
+    expect(softwareClosure).toContain("`rolcanlogin: true → false`");
+    expect(softwareClosure).toContain("`ALTER ROLE miayaar_app NOLOGIN;`");
+    expect(softwareClosure).toContain("`DATABASE_URL` remains unchanged");
+    expect(softwareClosure).toContain("does not itself authorise a next build phase");
+    expect(softwareClosure).toContain(
+      "does not authorise `DROP ROLE`, `CREATE ROLE`, password changes"
+    );
   });
 });
