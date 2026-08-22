@@ -153,3 +153,6 @@
 - [x] Phase 4 methodology explanation: present used, available, and not-applicable governed methods with policy-derived applicability explanations and server-returned calculation outcomes only.
 - [x] Phase 4 methodology explanation: present Success, Partial, or Error only when deterministically derived from the existing server response, without inventing a result status or non-calculation reason.
 - [x] Phase 4 methodology explanation: add seven-type explanation coverage, verification evidence, quality gates, and one pull request.
+- [x] Phase 5 valuation results: rebuild the valuation report into property summary, applicable methods, method results, final valuation, confidence, evidence, comparables, decision trace, warnings, and data limitations using server-returned data only.
+- [x] Phase 5 valuation results: classify rendered content as FACT, ASSESSMENT, UNAVAILABLE, or NOT_APPLICABLE without fabricating a value, evidence state, comparable, trace step, warning, or limitation.
+- [x] Phase 5 valuation results: add seven-type report coverage, verification evidence, quality gates, and one pull request.
