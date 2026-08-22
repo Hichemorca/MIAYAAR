@@ -1,8 +1,16 @@
 # RLS application-role implementation package — U-010
 
-**Status:** **PREPARED / NOT APPLIED.** This package is a review artifact. It
-does not authorize any database change, connection-secret change, deployment,
-or production use of the new role.
+**Status:** **HISTORICAL PREPARATION ARTIFACT — SOFTWARE ROLLOUT CLOSED.**
+
+> **Closure update — 2026-08-22:** The staged RLS rollout described by this
+> package was applied and its programmatic scope is closed. The authoritative
+> applied-state evidence is
+> `RLS-U010-ROLLOUT-RECORD-2026-08-21.md`; the owner-approved deferred
+> `NOLOGIN` correction is limited to
+> `RLS-U010-NOLOGIN-ADMINISTRATIVE-CHANGE-PACKAGE-2026-08-22.md`. This document
+> preserves the original preparation gates as historical evidence. It does not
+> authorize a new database, connection-secret, deployment, or application-role
+> transition.
 
 ## 1. Purpose and governing evidence
 
@@ -23,7 +31,7 @@ and the existing RLS readiness review remain authoritative.
 
 | Artifact                                                              | Purpose                                                                                                      | Application status |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------ |
-| `20260821200000_prepare_least_privilege_application_role_and_rls.sql` | Creates or hardens the role, restricts table/sequence access, enables RLS, and defines policies.             | **Not applied**    |
+| `20260821200000_prepare_least_privilege_application_role_and_rls.sql` | Created the reviewed role boundary, restricted table/sequence access, revoked direct-client table access, and defined policies. | **Applied; see rollout record** |
 | `rls-hardening-design.test.ts`                                        | Ensures the migration remains explicit about role attributes, table coverage, policies, and non-application. | Runs in CI only    |
 | This document                                                         | Defines preconditions, acceptance checks, rollback, and known boundaries.                                    | Documentation only |
 
