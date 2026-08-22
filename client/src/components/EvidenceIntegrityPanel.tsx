@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import React from "react";
 import {
   AlertTriangle,
   CalendarClock,
@@ -47,6 +48,21 @@ function ResultDetails({ result }: { result: EvidenceIntegrityResult }) {
   return (
     <>
       <p className="ei-summary">{getEvidenceIntegritySummary(result)}</p>
+      <div className="ei-scope-facts" aria-label="Evidence scope facts">
+        <span>
+          <b>Source</b>
+          {result.provenance.source}
+        </span>
+        <span>
+          <b>Reporting window</b>
+          {formatDate(result.provenance.filters.from)} to{" "}
+          {formatDate(result.provenance.asOf)}
+        </span>
+        <span>
+          <b>Policy</b>
+          {result.provenance.policyVersion}
+        </span>
+      </div>
       <div className="ei-metrics" aria-label="Evidence integrity summary">
         {metrics.map(metric => (
           <div key={metric.label}>
@@ -98,6 +114,46 @@ function ResultDetails({ result }: { result: EvidenceIntegrityResult }) {
         )}
       </details>
     </>
+  );
+}
+
+/**
+ * Pure report surface for the factual Evidence Integrity response. It accepts
+ * only the existing server contract and deliberately has no valuation,
+ * confidence, score, or diagnostic inputs.
+ */
+export function EvidenceIntegritySnapshot({
+  result,
+}: {
+  result: EvidenceIntegrityResult;
+}) {
+  const isAvailable = result.status === "available";
+
+  return (
+    <div className="ei-result-data">
+      <div className="ei-result-title">
+        <span className={`status-badge ${isAvailable ? "positive" : "negative"}`}>
+          <i />
+          {isAvailable
+            ? "FACT · Evidence available"
+            : "UNAVAILABLE · Evidence insufficient"}
+        </span>
+        <b>{getEvidenceIntegrityHeading(result.status)}</b>
+      </div>
+      <ResultDetails result={result} />
+      <aside className="ei-limitations" aria-label="Evidence limits">
+        <p>Evidence limits</p>
+        <span>
+          This facts-only DLD record cannot establish value, price fairness, a
+          confidence or quality score, or a diagnostic classification.
+        </span>
+        <ul>
+          <li>No valuation or price-per-sqm result is produced.</li>
+          <li>No confidence, evidence score, or quality score is produced.</li>
+          <li>No fallback source or broader geographic scope is used.</li>
+        </ul>
+      </aside>
+    </div>
   );
 }
 
@@ -248,20 +304,7 @@ export default function EvidenceIntegrityPanel({
         )}
         {(state === "available" || state === "unavailable") &&
           evidenceQuery.data && (
-            <div className="ei-result-data">
-              <div className="ei-result-title">
-                <span
-                  className={`status-badge ${state === "available" ? "positive" : "negative"}`}
-                >
-                  <i />
-                  {state === "available"
-                    ? "Evidence available"
-                    : "Evidence unavailable"}
-                </span>
-                <b>{getEvidenceIntegrityHeading(state)}</b>
-              </div>
-              <ResultDetails result={evidenceQuery.data} />
-            </div>
+            <EvidenceIntegritySnapshot result={evidenceQuery.data} />
           )}
       </div>
     </section>
