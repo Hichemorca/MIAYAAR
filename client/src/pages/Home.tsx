@@ -20,7 +20,14 @@ import {
 import type { PropertySubmission } from "@shared/valuation/contracts";
 import { getApplicableMethods, type ValuationMethod } from "@shared/valuation/method-applicability.policy";
 import { trpc } from "@/lib/trpc";
-import { getVisibleEconomicFields, propertyTypeChoices, toggleViewSelection, viewChoices } from "./home-form-config";
+import {
+  getApplicableMethodFields,
+  getVisibleEconomicFields,
+  propertyTypeChoices,
+  publicMethodFieldLabels,
+  toggleViewSelection,
+  viewChoices,
+} from "./home-form-config";
 
 const LazyValuationReport = lazy(() => import("@/components/ValuationReport"));
 
@@ -100,11 +107,25 @@ export default function Home() {
   }, [report]);
   const selectedType = propertyTypeChoices.find(choice => choice.value === form.propertyType) ?? propertyTypeChoices[0];
   const applicableMethods = getApplicableMethods(form.propertyType);
+  const applicableMethodFields = getApplicableMethodFields(form.propertyType);
   const visibleEconomicFields = getVisibleEconomicFields(form.propertyType);
 
   function update<K extends keyof PropertySubmission>(key: K, value: PropertySubmission[K]) {
     setInputMessage(null);
     setForm(current => ({ ...current, [key]: value }));
+  }
+
+  function updatePropertyType(propertyType: PropertySubmission["propertyType"]) {
+    const visibleFields = getVisibleEconomicFields(propertyType);
+    setInputMessage(null);
+    setForm(current => ({
+      ...current,
+      propertyType,
+      annualRentAed: visibleFields.includes("annualRentAed") ? current.annualRentAed : undefined,
+      replacementCostPerSqm: visibleFields.includes("replacementCostPerSqm") ? current.replacementCostPerSqm : undefined,
+      landValueAed: undefined,
+      depreciationFactor: visibleFields.includes("depreciationFactor") ? current.depreciationFactor : undefined,
+    }));
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -164,12 +185,19 @@ export default function Home() {
 
             <div className="mi-property-type-strip" aria-label="Applicable valuation approaches">
               <div><span>Applicable approaches</span><b>{applicableMethods.length} of 4</b><small>§4 method applicability</small></div>
-              <div className="pill-list">{applicableMethods.map(method => <span key={method}>{methodLabels[method]}</span>)}</div>
+              <div className="mi-method-matrix" role="list" aria-label="Applicable approaches and public fields">
+                {applicableMethodFields.map(({ method, fieldKeys }) => (
+                  <article key={method} role="listitem">
+                    <b>{methodLabels[method]}</b>
+                    <span>{fieldKeys.length > 0 ? fieldKeys.map(fieldKey => publicMethodFieldLabels[fieldKey]).join(" · ") : "No public submission fields"}</span>
+                  </article>
+                ))}
+              </div>
             </div>
 
             <div className="mi-input-grid mi-input-grid-rebuild">
               <fieldset><legend><Building2 size={17} />Identity & location</legend>
-                <SelectField label="Property type" value={form.propertyType} onChange={value => update("propertyType", value as PropertySubmission["propertyType"])}>{propertyTypeChoices.map(choice => <option value={choice.value} key={choice.value}>{choice.label}</option>)}</SelectField>
+                <SelectField label="Property type" value={form.propertyType} onChange={value => updatePropertyType(value as PropertySubmission["propertyType"])}>{propertyTypeChoices.map(choice => <option value={choice.value} key={choice.value}>{choice.label}</option>)}</SelectField>
                 <label className="mi-field"><span>District</span><input className="mi-text-input" value={form.district} maxLength={160} placeholder="Enter the recorded district" onChange={event => update("district", event.target.value)} aria-label="District" /><small className="mi-field-hint">MIAYAAR does not provide a district catalogue or normalize this entry in the client.</small></label>
                 <div className="mi-fields-two"><NumberField label="Internal area" value={form.areaSqm || undefined} onChange={value => update("areaSqm", value ?? 0)} suffix="sqm" min={0} hint="Required" /><NumberField label="Bedrooms" value={form.bedrooms} onChange={value => update("bedrooms", value)} suffix="rooms" min={0} max={20} optional /></div>
                 <NumberField label="Year built" value={form.yearBuilt} onChange={value => update("yearBuilt", value)} suffix="year" min={1800} max={2100} optional />
@@ -186,7 +214,6 @@ export default function Home() {
                 <p className="fieldset-note">Inputs are shown only when their approach applies to the selected type. The server verifies required supplied values; the client does not create an approach, value, or adjustment.</p>
                 {visibleEconomicFields.includes("annualRentAed") && <NumberField label="Annual rent" value={form.annualRentAed} onChange={value => update("annualRentAed", value)} suffix="AED" step={5000} optional />}
                 {visibleEconomicFields.includes("replacementCostPerSqm") && <NumberField label="Replacement cost" value={form.replacementCostPerSqm} onChange={value => update("replacementCostPerSqm", value)} suffix="AED/sqm" step={100} optional />}
-                {visibleEconomicFields.includes("landValueAed") && <NumberField label="Land value" value={form.landValueAed} onChange={value => update("landValueAed", value)} suffix="AED" step={50000} optional />}
                 {visibleEconomicFields.includes("depreciationFactor") && <NumberField label="Depreciation factor" value={form.depreciationFactor} onChange={value => update("depreciationFactor", value)} suffix="ratio" step={0.01} optional hint="Validated by the server" />}
                 {applicableMethods.includes("dcf") && <p className="fieldset-note">DCF is applicable for this type, but its governed engine inputs are not exposed by this public submission contract; the server will not manufacture them.</p>}
                 <div className="mi-absence-note"><Ruler size={15} /><span>Project, legal rights, zoning, hospitality, and secondary-attribute inputs are not shown because no governed UI contract currently supports them.</span></div>
