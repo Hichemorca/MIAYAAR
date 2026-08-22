@@ -51,7 +51,7 @@ test('does not fabricate a valuation when every approach input is absent', async
   }
 });
 
-test('creates an immutable canonical Valuation with Money scenario bounds when all approaches are valid', async () => {
+test('excludes Cost from an apartment valuation even when cost data and its frozen §5 weight are present', async () => {
   const result = await new ValuationEngine().execute({
     requestId: 'request-canonical-001',
     property: minimalProperty,
@@ -72,7 +72,12 @@ test('creates an immutable canonical Valuation with Money scenario bounds when a
     assert.equal(valuation.result.methodologyVersion, '1.2');
     assert.equal(valuation.result.value.currency.code, 'AED');
     assert.ok(valuation.result.value.amount > 0);
-    assert.equal(valuation.result.approachResults.length, 4);
+    assert.equal(valuation.result.approachResults.length, 3);
+    assert.deepEqual(valuation.result.approachResults.map(approach => approach.approach), [
+      'Sales Comparison',
+      'Income Capitalization',
+      'Discounted Cash Flow',
+    ]);
     assert.ok(valuation.result.lowerBound!.amount < valuation.result.value.amount);
     assert.ok(valuation.result.upperBound!.amount > valuation.result.value.amount);
     assert.ok(valuation.result.rangeWidthPercent! > 0);
@@ -93,7 +98,31 @@ test('creates an immutable canonical Valuation with Money scenario bounds when a
     message:
       'The completed valuation applies explicitly labelled provisional calculation rules pending methodology approval (CALC-008, CALC-009, CALC-010, CALC-011, CALC-012, CALC-013, CALC-014, CALC-016).',
   });
-  assert.ok(!provisionalWarning?.message.includes('CALC-015'));
+    assert.ok(!provisionalWarning?.message.includes('CALC-015'));
+  assert.equal(result.warnings.some(warning => warning.message.startsWith('cost is unavailable')), false);
+});
+
+test('filters income and cost calculations for land while retaining its applicable sales comparison and DCF methods', async () => {
+  const landProperty = {
+    ...minimalProperty,
+    classification: { ...minimalProperty.classification, type: PropertyType.LAND },
+  };
+  const result = await new ValuationEngine().execute({
+    property: landProperty,
+    market: minimalMarketSnapshot,
+    data: apartmentValuationData,
+    config: baselineValuationConfiguration,
+  });
+
+  assert.equal(result.data.available, true);
+  if (result.data.available) {
+    assert.deepEqual(result.data.valuation.result.approachResults.map(approach => approach.approach), [
+      'Sales Comparison',
+      'Discounted Cash Flow',
+    ]);
+  }
+  assert.equal(result.warnings.some(warning => warning.message.startsWith('incomeCapitalization is unavailable')), false);
+  assert.equal(result.warnings.some(warning => warning.message.startsWith('cost is unavailable')), false);
 });
 
 test('returns a transparent partial result when only sales comparison data is usable', async () => {
