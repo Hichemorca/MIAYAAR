@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  getApplicableMethodFields,
   contractPropertyFields,
   getVisibleEconomicFields,
+  getPublicMethodFields,
   propertyTypeChoices,
   shouldRenderFieldForPropertyType,
   toggleViewSelection,
@@ -50,11 +52,47 @@ describe("UI reference rebuild contract guardrails", () => {
     expect(getVisibleEconomicFields("villa")).toEqual([
       "annualRentAed",
       "replacementCostPerSqm",
-      "landValueAed",
       "depreciationFactor",
     ]);
     expect(getVisibleEconomicFields("warehouse")).toEqual([]);
     expect(shouldRenderFieldForPropertyType("warehouse", "floor")).toBe(true);
+    expect(shouldRenderFieldForPropertyType("villa", "landValueAed")).toBe(false);
+  });
+
+  it("renders the policy-driven public field matrix for every governed property type", () => {
+    expect(getPublicMethodFields("salesComparison")).toEqual(["district", "areaSqm"]);
+    expect(getPublicMethodFields("incomeCapitalization")).toEqual(["annualRentAed"]);
+    expect(getPublicMethodFields("cost")).toEqual([
+      "replacementCostPerSqm",
+      "depreciationFactor",
+    ]);
+    expect(getPublicMethodFields("dcf")).toEqual([]);
+
+    expect(getApplicableMethodFields("apartment")).toEqual([
+      { method: "salesComparison", fieldKeys: ["district", "areaSqm"] },
+      { method: "incomeCapitalization", fieldKeys: ["annualRentAed"] },
+      { method: "dcf", fieldKeys: [] },
+    ]);
+
+    for (const propertyType of ["villa", "townhouse", "office", "retail"] as const) {
+      expect(getApplicableMethodFields(propertyType)).toEqual([
+        { method: "salesComparison", fieldKeys: ["district", "areaSqm"] },
+        { method: "incomeCapitalization", fieldKeys: ["annualRentAed"] },
+        {
+          method: "cost",
+          fieldKeys: ["replacementCostPerSqm", "depreciationFactor"],
+        },
+        { method: "dcf", fieldKeys: [] },
+      ]);
+    }
+
+    expect(getApplicableMethodFields("land")).toEqual([
+      { method: "salesComparison", fieldKeys: ["district", "areaSqm"] },
+      { method: "dcf", fieldKeys: [] },
+    ]);
+    expect(getApplicableMethodFields("warehouse")).toEqual([
+      { method: "salesComparison", fieldKeys: ["district", "areaSqm"] },
+    ]);
   });
 
   it("keeps the required view list non-empty and respects the server-backed five-view cap", () => {
